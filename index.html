@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StrategyOS — AI Project Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#E8385A;--accent2:#FF6B35;--teal:#00C9B1;--gold:#F7C948;--purple:#7F77DD;
+  --ink:#1a1a1a;--muted:#888;--surf:#ffffff;--surf2:#f7f7f5;--surf3:#f0efeb;
+  --bdr:#e5e5e0;--bdr2:#ccccc7;--r:10px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root{
+    --ink:#e8e8e2;--muted:#888;--surf:#1c1c1a;--surf2:#242422;--surf3:#2c2c2a;
+    --bdr:#333330;--bdr2:#444440;
+  }
+}
+body{font-family:var(--font);color:var(--ink);background:var(--surf2);font-size:13px;height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;border-bottom:0.5px solid var(--bdr);background:var(--surf);flex-shrink:0;z-index:10}
+.topbar-logo{display:flex;align-items:center;gap:9px;padding:12px 18px;border-right:0.5px solid var(--bdr);min-width:190px}
+.logo-badge{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.logo-name{font-size:14px;font-weight:600;letter-spacing:-0.3px}
+.logo-sub{font-size:10px;color:var(--muted)}
+.topbar-tabs{display:flex;flex:1;overflow-x:auto}
+.tab{padding:0 16px;height:47px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;flex-shrink:0}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-badge{background:var(--surf2);color:var(--muted);font-size:10px;padding:1px 5px;border-radius:9px}
+.tab.active .tab-badge{background:rgba(232,56,90,0.1);color:var(--accent)}
+.topbar-right{padding:0 14px;border-left:0.5px solid var(--bdr);display:flex;align-items:center}
+.av{width:26px;height:26px;border-radius:50%;border:2px solid var(--surf);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+
+.views{flex:1;overflow:hidden;display:flex}
+.view{display:none;flex:1;overflow:hidden}
+.view.active{display:flex}
+
+/* NEW PROJECT */
+.np{display:flex;width:100%;overflow:hidden}
+.np-left{width:360px;flex-shrink:0;border-right:0.5px solid var(--bdr);overflow-y:auto;background:var(--surf);display:flex;flex-direction:column}
+.np-right{flex:1;overflow-y:auto;background:var(--surf2)}
+
+.sec{padding:14px 18px;border-bottom:0.5px solid var(--bdr)}
+.sec-title{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px}
+input.fi,textarea.fi,select.fi{width:100%;padding:7px 10px;border:0.5px solid var(--bdr);border-radius:7px;background:var(--surf2);color:var(--ink);font-family:var(--font);font-size:12px;outline:none;transition:border-color 0.15s}
+input.fi:focus,textarea.fi:focus,select.fi:focus{border-color:var(--accent)}
+input.fi::placeholder,textarea.fi::placeholder{color:var(--muted);opacity:0.5}
+textarea.fi{resize:none;line-height:1.5}
+select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+/* TENSIÓN */
+.tension-field{border:0.5px solid var(--bdr);border-radius:9px;background:var(--surf2);overflow:hidden;transition:border-color 0.2s;margin-top:8px}
+.tension-field:focus-within{border-color:var(--accent)}
+.tension-header{display:flex;align-items:center;gap:8px;padding:9px 11px 0}
+.tension-icon{width:22px;height:22px;border-radius:5px;background:rgba(232,56,90,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.tension-label{font-size:11px;font-weight:600;color:var(--accent)}
+.tension-sub{font-size:10px;color:var(--muted);padding:3px 11px 7px 41px}
+textarea.tension-ta{width:100%;padding:0 11px 10px 41px;border:none;background:transparent;color:var(--ink);font-family:var(--font);font-size:12px;outline:none;resize:none;line-height:1.6;min-height:72px}
+textarea.tension-ta::placeholder{color:var(--muted);opacity:0.45}
+.tension-tags{padding:0 11px 10px;display:flex;flex-wrap:wrap;gap:5px;border-top:0.5px solid var(--bdr);padding-top:9px;margin-top:2px}
+.ttag{padding:4px 9px;border-radius:14px;font-size:11px;font-weight:500;border:0.5px solid var(--bdr);color:var(--muted);cursor:pointer;transition:all 0.14s;background:var(--surf);user-select:none}
+.ttag:hover{border-color:var(--accent);color:var(--accent)}
+.ttag.sel{background:rgba(232,56,90,0.08);color:var(--accent);border-color:var(--accent)}
+
+/* PDF */
+.pdf-zone{border:1px dashed var(--bdr2);border-radius:9px;padding:14px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surf2);position:relative;margin-top:8px}
+.pdf-zone:hover,.pdf-zone.drag{border-color:var(--accent);background:rgba(232,56,90,0.03)}
+.pdf-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.pdf-files{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pdf-file{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surf);border:0.5px solid var(--bdr);border-radius:8px}
+.pdf-file-ico{width:26px;height:26px;border-radius:6px;background:rgba(232,56,90,0.08);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.pdf-file-info{flex:1;min-width:0}
+.pdf-file-name{font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdf-file-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.pdf-st{font-size:11px;font-weight:500;flex-shrink:0}
+.pdf-st.loading{color:var(--gold)}.pdf-st.done{color:var(--teal)}.pdf-st.error{color:var(--accent)}
+.pdf-rm{padding:2px 5px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1;flex-shrink:0}
+.pdf-rm:hover{color:var(--accent)}
+.pdf-bar{height:2px;background:var(--surf2);border-radius:1px;overflow:hidden;margin-top:4px}
+.pdf-bar-fill{height:100%;width:70%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:1px}
+
+/* Tags */
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{padding:4px 8px;border-radius:14px;font-size:11px;font-weight:500;border:0.5px solid var(--bdr);color:var(--muted);cursor:pointer;transition:all 0.14s;background:var(--surf);user-select:none}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
+.tag.sr{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tag.st{background:var(--teal);color:#fff;border-color:var(--teal)}
+.tag.sp{background:var(--purple);color:#fff;border-color:var(--purple)}
+.tag.so{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.aud-sub{margin-bottom:11px}
+.aud-sub-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px}
+
+/* Age */
+.age-range-track{position:relative;height:4px;margin:10px 0 6px}
+.age-range-bg{position:absolute;width:100%;height:100%;background:var(--surf2);border-radius:2px;top:0}
+.age-range-active{position:absolute;height:100%;background:var(--accent);border-radius:2px;top:0;pointer-events:none}
+input[type=range].age-inp{position:absolute;width:100%;height:4px;background:none;outline:none;-webkit-appearance:none;pointer-events:none;top:0;left:0;z-index:2}
+input[type=range].age-inp::-webkit-slider-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--surf);cursor:pointer;-webkit-appearance:none;pointer-events:all}
+
+/* City */
+.city-search-wrap{position:relative}
+.city-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surf);border:0.5px solid var(--bdr2);border-radius:8px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.city-dropdown.open{display:block}
+.city-opt{padding:7px 11px;font-size:12px;cursor:pointer;transition:background 0.1s}
+.city-opt:hover{background:var(--surf2)}
+.city-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.city-chip{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;background:rgba(0,201,177,0.08);color:var(--teal);font-size:11px;font-weight:500;border:0.5px solid rgba(0,201,177,0.25)}
+.city-chip .rm{cursor:pointer;opacity:0.5;font-size:13px;line-height:1}
+.city-chip .rm:hover{opacity:1}
+
+/* Type cards */
+.type-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.type-card{padding:10px 6px;border-radius:8px;border:0.5px solid var(--bdr);background:var(--surf2);text-align:center;cursor:pointer;transition:all 0.14s}
+.type-card:hover{border-color:var(--accent)}
+.type-card.sel{border-color:var(--accent);background:rgba(232,56,90,0.06)}
+.type-card .tc-icon{font-size:17px;margin-bottom:4px}
+.type-card .tc-name{font-size:11px;font-weight:600}
+.type-card .tc-desc{font-size:9px;color:var(--muted);margin-top:1px}
+
+/* Split */
+.split-row{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.split-lbl{font-size:11px;width:78px;color:var(--muted);font-weight:500}
+input.split-n{width:44px;padding:4px 6px;border:0.5px solid var(--bdr);border-radius:6px;background:var(--surf2);color:var(--ink);font-family:var(--mono);font-size:11px;text-align:right;outline:none}
+.track{flex:1;height:3px;background:var(--surf3);border-radius:2px;overflow:hidden}
+.bar{height:100%;border-radius:2px;transition:width 0.25s}
+
+.btn-primary{width:calc(100% - 36px);margin:14px 18px;padding:11px;border-radius:9px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.2s,transform 0.1s}
+.btn-primary:hover{opacity:0.9}
+.btn-primary:active{transform:scale(0.98)}
+.btn-primary:disabled{opacity:0.45;cursor:not-allowed}
+
+/* Results */
+.results-area{flex:1;overflow-y:auto;background:var(--surf2)}
+.rt{padding:13px 18px;border-bottom:0.5px solid var(--bdr);background:var(--surf);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rt-title{font-size:13px;font-weight:600}
+.rt-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.btn-sm{padding:5px 10px;border-radius:6px;border:0.5px solid var(--bdr);background:var(--surf);color:var(--ink);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.14s;white-space:nowrap}
+.btn-sm:hover{background:var(--surf2)}
+.btn-sm.pr{background:var(--accent);color:#fff;border-color:var(--accent)}
+.badge-ok{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;background:rgba(0,201,177,0.1);color:var(--teal)}
+.badge-pend{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;background:rgba(247,201,72,0.12);color:#9a7b00}
+.rg{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.rc{background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:13px;transition:border-color 0.14s}
+.rc:hover{border-color:var(--bdr2)}
+.rc.full{grid-column:1/-1}
+.rc-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.rc-ico{width:28px;height:28px;border-radius:6px;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rc-t{font-size:12px;font-weight:600}
+.rc-s{font-size:10px;color:var(--muted)}
+.rc-body{font-size:12px;color:var(--muted);line-height:1.65}
+.rc-body strong{color:var(--ink);font-weight:600}
+.skel{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.sl{height:9px;border-radius:3px;background:var(--bdr);margin-bottom:6px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.2;transform:scale(0.6)}}
+.pbar{height:2px;background:var(--surf2);border-radius:1px;overflow:hidden;margin-top:7px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:prog 2s ease-in-out infinite}
+@keyframes prog{0%{width:4%}50%{width:78%}100%{width:94%}}
+
+/* Historial */
+.hv{display:flex;flex-direction:column;overflow-y:auto;flex:1}
+.hv-filters{display:flex;gap:6px;padding:12px 22px 0;flex-wrap:wrap}
+.hf{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:500;border:0.5px solid var(--bdr);cursor:pointer;transition:all 0.14s;color:var(--muted);background:var(--surf)}
+.hf:hover{border-color:var(--accent);color:var(--accent)}
+.hf.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px;padding:12px 22px 24px}
+.hcard{background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all 0.14s}
+.hcard:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.hc-top{padding:11px 12px 8px;border-bottom:0.5px solid var(--bdr)}
+.hc-brand{font-size:13px;font-weight:600}
+.hc-type{font-size:10px;color:var(--muted);margin-top:2px}
+.hc-tension{font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc-chips{display:flex;gap:4px;flex-wrap:wrap;padding:7px 12px 9px}
+.chip{padding:2px 7px;border-radius:8px;font-size:10px;font-weight:500}
+.chip-bl{background:rgba(59,139,221,0.1);color:#185fa5}
+.chip-tl{background:rgba(0,201,177,0.08);color:#0a7060}
+.chip-rd{background:rgba(232,56,90,0.08);color:#b0273e}
+.chip-gd{background:rgba(247,201,72,0.12);color:#9a7b00}
+.hc-foot{padding:6px 12px;border-top:0.5px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.hc-date{font-size:10px;color:var(--muted)}
+.ib{padding:3px 6px;border-radius:5px;border:0.5px solid var(--bdr);background:var(--surf2);font-size:11px;cursor:pointer;color:var(--muted)}
+.ib:hover{background:var(--surf3);color:var(--ink)}
+
+/* Brief */
+.brief-v{display:flex;flex:1;background:var(--surf2);overflow-y:auto}
+.brief-wrap{max-width:680px;margin:0 auto;padding:22px 18px 40px;width:100%}
+
+/* Collab */
+.collab-v{display:flex;flex-direction:column;flex:1}
+.collab-inner{display:flex;flex:1;overflow:hidden}
+.collab-chat{flex:1;display:flex;flex-direction:column;border-right:0.5px solid var(--bdr)}
+.collab-side{width:220px;flex-shrink:0;overflow-y:auto;background:var(--surf)}
+.ch-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:7px;align-items:flex-start}
+.msg.own{flex-direction:row-reverse}
+.msg-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0}
+.msg-bubble{padding:7px 10px;border-radius:9px;max-width:75%;font-size:12px;line-height:1.5}
+.msg.own .msg-bubble{background:var(--accent);color:#fff;border-radius:9px 9px 2px 9px}
+.msg.other .msg-bubble{background:var(--surf2);border:0.5px solid var(--bdr);border-radius:9px 9px 9px 2px}
+.msg-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.msg.own .msg-meta{text-align:right}
+.ch-inp-area{padding:10px 14px;border-top:0.5px solid var(--bdr);display:flex;gap:7px;align-items:center;flex-shrink:0;background:var(--surf)}
+.ch-inp{flex:1;padding:7px 11px;border:0.5px solid var(--bdr);border-radius:18px;background:var(--surf2);font-family:var(--font);font-size:12px;color:var(--ink);outline:none}
+.ch-inp:focus{border-color:var(--accent)}
+.send-btn{width:29px;height:29px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+
+.toast{position:fixed;bottom:14px;right:14px;background:var(--surf);border:0.5px solid var(--bdr);border-radius:9px;padding:9px 13px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:7px;z-index:999;animation:sIn 0.2s ease;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+@keyframes sIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-badge">S</div>
+    <div><div class="logo-name">StrategyOS</div><div class="logo-sub">AI Project Intelligence</div></div>
+  </div>
+  <div class="topbar-tabs">
+    <div class="tab active" onclick="sw('new')">✦ Nuevo proyecto</div>
+    <div class="tab" onclick="sw('history')">📁 Historial <span class="tab-badge" id="hc">0</span></div>
+    <div class="tab" onclick="sw('brief')">📄 Brief creativo <span class="tab-badge" id="bb">–</span></div>
+    <div class="tab" onclick="sw('collab')">👥 Colaboración <span class="tab-badge">3</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="av" style="background:rgba(0,201,177,0.12);color:#00C9B1;margin-right:-5px;z-index:3">CM</div>
+    <div class="av" style="background:rgba(232,56,90,0.1);color:#E8385A;margin-right:-5px;z-index:2">AV</div>
+    <div class="av" style="background:rgba(247,201,72,0.18);color:#9a7b00;z-index:1">JL</div>
+  </div>
+</div>
+
+<div class="views">
+
+<!-- ══ NUEVO PROYECTO ══ -->
+<div class="view active" id="view-new">
+<div class="np">
+<div class="np-left">
+
+  <div class="sec">
+    <div class="sec-title">Marca / Proyecto</div>
+    <div class="field"><label>Nombre de la marca</label><input class="fi" id="brand" placeholder="Ej. Nike, Oxxo, startup…"/></div>
+    <div class="field"><label>Descripción del producto / servicio</label>
+      <textarea class="fi" id="desc" rows="2" placeholder="Describe tu producto… o adjunta un PDF ↓"></textarea></div>
+    <div id="pdf-zone" class="pdf-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+      <input type="file" accept=".pdf" multiple onchange="handleFiles(this.files)" id="pdf-input"/>
+      <div style="font-size:20px;margin-bottom:5px">📎</div>
+      <div style="font-size:12px;font-weight:500;color:var(--muted)">Adjuntar PDF(s)</div>
+      <div style="font-size:10px;color:var(--muted);opacity:0.6;margin-top:2px">Brief, deck, research · Arrastra o haz clic</div>
+    </div>
+    <div class="pdf-files" id="pdf-files"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Problema / Tensión a resolver</div>
+    <div class="tension-field">
+      <div class="tension-header">
+        <div class="tension-icon">⚡</div>
+        <span class="tension-label">¿Qué problema debe resolver esta campaña?</span>
+      </div>
+      <div class="tension-sub">El conflicto real en la mente del consumidor o en el mercado</div>
+      <textarea class="tension-ta" id="tension" rows="3" placeholder="Ej: La gente quiere comer sano pero no tiene tiempo. / La marca tiene awareness pero baja conversión…"></textarea>
+      <div class="tension-tags">
+        <div class="ttag" onclick="setTension(this,'Baja percepción de valor')">Baja percepción de valor</div>
+        <div class="ttag" onclick="setTension(this,'Desconocimiento de marca')">Desconocimiento de marca</div>
+        <div class="ttag" onclick="setTension(this,'Alta competencia en precio')">Alta competencia en precio</div>
+        <div class="ttag" onclick="setTension(this,'Barrera de confianza')">Barrera de confianza</div>
+        <div class="ttag" onclick="setTension(this,'Cambio de hábito del consumidor')">Cambio de hábito</div>
+        <div class="ttag" onclick="setTension(this,'Reposicionamiento necesario')">Reposicionamiento</div>
+        <div class="ttag" onclick="setTension(this,'Saturación del mercado')">Saturación del mercado</div>
+        <div class="ttag" onclick="setTension(this,'Pérdida de relevancia')">Pérdida de relevancia</div>
+        <div class="ttag" onclick="setTension(this,'Entrada a nuevo mercado')">Nuevo mercado</div>
+        <div class="ttag" onclick="setTension(this,'Crisis de reputación')">Crisis de reputación</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Presupuesto total</div>
+    <div style="display:flex;gap:7px">
+      <div><label style="font-size:11px;font-weight:500;color:var(--muted);display:block;margin-bottom:4px">Moneda</label>
+        <select class="fi" id="currency" onchange="fmtBudget()" style="width:80px">
+          <option value="MXN">🇲🇽 MXN</option>
+          <option value="USD">🇺🇸 USD</option>
+        </select></div>
+      <div style="flex:1"><label style="font-size:11px;font-weight:500;color:var(--muted);display:block;margin-bottom:4px">Monto</label>
+        <input class="fi" id="budget" type="number" placeholder="Ej. 500000" oninput="fmtBudget()"/></div>
+    </div>
+    <div id="budget-display" style="font-size:15px;font-weight:600;color:var(--accent);margin-top:5px;font-family:var(--mono);display:none"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Tipo de proyecto</div>
+    <div class="type-cards">
+      <div class="type-card sel" data-type="Lanzamiento" onclick="selTy(this)"><div class="tc-icon">🚀</div><div class="tc-name">Lanzamiento</div><div class="tc-desc">Nuevo producto</div></div>
+      <div class="type-card" data-type="Branding" onclick="selTy(this)"><div class="tc-icon">🎨</div><div class="tc-name">Branding</div><div class="tc-desc">Identidad</div></div>
+      <div class="type-card" data-type="Awareness" onclick="selTy(this)"><div class="tc-icon">📣</div><div class="tc-name">Awareness</div><div class="tc-desc">Reconocimiento</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">KPIs clave <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--muted)">(uno o varios)</span></div>
+    <div class="tags" id="t-kpi">
+      <div class="tag" onclick="tog(this,'st')">Awareness</div><div class="tag" onclick="tog(this,'st')">Reach</div><div class="tag" onclick="tog(this,'st')">Engagement</div><div class="tag" onclick="tog(this,'st')">Conversión</div><div class="tag" onclick="tog(this,'st')">ROAS</div><div class="tag" onclick="tog(this,'st')">Brand Lift</div><div class="tag" onclick="tog(this,'st')">Share of Voice</div><div class="tag" onclick="tog(this,'st')">CPL/CPA</div><div class="tag" onclick="tog(this,'st')">NPS</div><div class="tag" onclick="tog(this,'st')">Ventas directas</div><div class="tag" onclick="tog(this,'st')">Tráfico web</div><div class="tag" onclick="tog(this,'st')">CAC</div>
+    </div>
+    <div id="kpi-count" style="font-size:10px;color:var(--muted);margin-top:5px"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Audiencias target</div>
+    <div class="aud-sub">
+      <div class="aud-sub-label">Rango de edad</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <span style="font-size:12px;font-weight:600;font-family:var(--mono);color:var(--accent)" id="age-min-lbl">18</span>
+        <span style="font-size:10px;color:var(--muted)">años</span>
+        <span style="font-size:12px;font-weight:600;font-family:var(--mono);color:var(--accent)" id="age-max-lbl">45</span>
+      </div>
+      <div class="age-range-track"><div class="age-range-bg"></div><div class="age-range-active" id="age-fill"></div>
+        <input type="range" class="age-inp" id="age-min" min="13" max="80" value="18" oninput="updAge()">
+        <input type="range" class="age-inp" id="age-max" min="13" max="80" value="45" oninput="updAge()" style="z-index:3">
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>13</span><span>20</span><span>30</span><span>40</span><span>55</span><span>65+</span></div>
+    </div>
+    <div class="aud-sub" style="margin-top:9px"><div class="aud-sub-label">Género</div>
+      <div class="tags" id="t-gen"><div class="tag" onclick="tog(this,'sr')">Todos</div><div class="tag" onclick="tog(this,'sr')">Mujer</div><div class="tag" onclick="tog(this,'sr')">Hombre</div><div class="tag" onclick="tog(this,'sr')">No binario</div></div></div>
+    <div class="aud-sub" style="margin-top:9px"><div class="aud-sub-label">Generación</div>
+      <div class="tags" id="t-genx"><div class="tag" onclick="tog(this,'sp')">Gen Alpha</div><div class="tag" onclick="tog(this,'sp')">Gen Z</div><div class="tag" onclick="tog(this,'sp')">Millennials</div><div class="tag" onclick="tog(this,'sp')">Gen X</div><div class="tag" onclick="tog(this,'sp')">Boomers</div></div></div>
+    <div class="aud-sub" style="margin-top:9px"><div class="aud-sub-label">Gustos y preferencias</div>
+      <div class="tags" id="t-int">
+        <div class="tag" onclick="tog(this,'so')">Tecnología</div><div class="tag" onclick="tog(this,'so')">Moda/Estilo</div><div class="tag" onclick="tog(this,'so')">Deportes</div><div class="tag" onclick="tog(this,'so')">Gastronomía</div><div class="tag" onclick="tog(this,'so')">Entretenimiento</div><div class="tag" onclick="tog(this,'so')">Viajes</div><div class="tag" onclick="tog(this,'so')">Finanzas personales</div><div class="tag" onclick="tog(this,'so')">Bienestar/Salud</div><div class="tag" onclick="tog(this,'so')">Gaming</div><div class="tag" onclick="tog(this,'so')">Sustentabilidad</div><div class="tag" onclick="tog(this,'so')">Arte/Cultura</div><div class="tag" onclick="tog(this,'so')">Emprendimiento</div><div class="tag" onclick="tog(this,'so')">Familia/Hogar</div><div class="tag" onclick="tog(this,'so')">Lujo/Premium</div>
+      </div>
+      <input class="fi" style="margin-top:6px" id="ca-int" placeholder="+ Otro gusto (Enter)" onkeydown="addTag(event,'t-int','so')"/>
+    </div>
+    <div class="aud-sub" style="margin-top:9px"><div class="aud-sub-label">Perfil adicional</div>
+      <div class="tags" id="t-prof"><div class="tag" onclick="tog(this,'sr')">Padres de familia</div><div class="tag" onclick="tog(this,'sr')">Profesionistas</div><div class="tag" onclick="tog(this,'sr')">Emprendedores</div><div class="tag" onclick="tog(this,'sr')">Estudiantes</div><div class="tag" onclick="tog(this,'sr')">B2B</div><div class="tag" onclick="tog(this,'sr')">NSE A/B</div><div class="tag" onclick="tog(this,'sr')">NSE C+</div><div class="tag" onclick="tog(this,'sr')">NSE C/D</div></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Ciudades / Regiones</div>
+    <div class="city-search-wrap">
+      <input class="fi" id="city-input" placeholder="Buscar ciudad o región…" autocomplete="off" oninput="filterCities()" onfocus="openDD()" onblur="setTimeout(closeDD,180)"/>
+      <div class="city-dropdown" id="city-dd"></div>
+    </div>
+    <div class="city-chips" id="city-chips"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Competidores</div>
+    <div class="field"><input class="fi" id="c1" placeholder="Competidor principal"/></div>
+    <div class="field"><input class="fi" id="c2" placeholder="Competidor 2"/></div>
+    <div class="field"><input class="fi" id="c3" placeholder="Competidor 3"/></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">Split de inversión (%)</div>
+    <div class="split-row"><span class="split-lbl">🎨 Creatividad</span><input class="split-n" type="number" id="sc" value="30" min="0" max="100" oninput="updSplit()"/><div class="track"><div class="bar" id="bc" style="width:30%;background:var(--accent)"></div></div></div>
+    <div class="split-row"><span class="split-lbl">🎬 Producción</span><input class="split-n" type="number" id="sp2" value="30" min="0" max="100" oninput="updSplit()"/><div class="track"><div class="bar" id="bp" style="width:30%;background:var(--teal)"></div></div></div>
+    <div class="split-row"><span class="split-lbl">📺 Medios</span><input class="split-n" type="number" id="sm" value="40" min="0" max="100" oninput="updSplit()"/><div class="track"><div class="bar" id="bm" style="width:40%;background:var(--gold)"></div></div></div>
+    <div style="font-size:10px;text-align:right;margin-top:2px" id="sttl">Total: 100%</div>
+  </div>
+
+  <button class="btn-primary" id="btn-run" onclick="runAnalysis()"><span>✦</span>Generar análisis estratégico</button>
+</div>
+
+<div class="results-area" id="results-area">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;gap:12px">
+    <div style="width:52px;height:52px;border-radius:13px;background:var(--surf);border:0.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:22px">✦</div>
+    <div style="font-size:15px;font-weight:600">Tu análisis estratégico aparece aquí</div>
+    <div style="font-size:12px;color:var(--muted);max-width:280px;line-height:1.6">Completa el brief y presiona generar. La IA usará búsqueda web en tiempo real.</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+      <span style="padding:3px 8px;border:0.5px solid var(--bdr);border-radius:11px;font-size:10px;color:var(--muted)">⚡ Tensión</span>
+      <span style="padding:3px 8px;border:0.5px solid var(--bdr);border-radius:11px;font-size:10px;color:var(--muted)">📎 PDFs</span>
+      <span style="padding:3px 8px;border:0.5px solid var(--bdr);border-radius:11px;font-size:10px;color:var(--muted)">📡 Trends</span>
+      <span style="padding:3px 8px;border:0.5px solid var(--bdr);border-radius:11px;font-size:10px;color:var(--muted)">🎯 Estrategia</span>
+      <span style="padding:3px 8px;border:0.5px solid var(--bdr);border-radius:11px;font-size:10px;color:var(--muted)">💡 Insights</span>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="view" id="view-history">
+<div class="hv">
+  <div style="padding:18px 22px 0"><div style="font-size:16px;font-weight:600;margin-bottom:3px">Historial de proyectos</div><div style="font-size:12px;color:var(--muted)">Todos tus análisis guardados.</div></div>
+  <div class="hv-filters">
+    <div class="hf active" onclick="fHist(this,'all')">Todos</div>
+    <div class="hf" onclick="fHist(this,'Lanzamiento')">🚀 Lanzamiento</div>
+    <div class="hf" onclick="fHist(this,'Branding')">🎨 Branding</div>
+    <div class="hf" onclick="fHist(this,'Awareness')">📣 Awareness</div>
+  </div>
+  <div class="hgrid" id="hgrid">
+    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center">
+      <div style="font-size:28px;margin-bottom:10px">📁</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">Sin proyectos aún</div>
+      <div style="font-size:11px;color:var(--muted)">Genera tu primer análisis.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BRIEF -->
+<div class="view" id="view-brief">
+<div class="brief-v"><div class="brief-wrap" id="brief-content">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center">
+    <div style="font-size:32px;margin-bottom:12px">📄</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px">Brief creativo</div>
+    <div style="font-size:12px;color:var(--muted);max-width:280px;line-height:1.6;margin:0 auto">Genera un análisis primero.</div>
+  </div>
+</div></div>
+</div>
+
+<!-- COLABORACIÓN -->
+<div class="view" id="view-collab">
+<div class="collab-v">
+  <div style="padding:12px 16px;border-bottom:0.5px solid var(--bdr);background:var(--surf);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div><div style="font-size:13px;font-weight:600">Espacio de equipo</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Comenta y colabora</div></div>
+    <span style="padding:3px 8px;border-radius:10px;font-size:10px;font-weight:500;background:rgba(0,201,177,0.1);color:#00C9B1">● 3 activos</span>
+  </div>
+  <div class="collab-inner">
+    <div class="collab-chat">
+      <div style="padding:11px 15px;border-bottom:0.5px solid var(--bdr);background:var(--surf);flex-shrink:0"><div style="font-size:12px;font-weight:600">💬 Canal del proyecto</div></div>
+      <div class="ch-msgs" id="ch-msgs">
+        <div class="msg other"><div class="msg-av" style="background:rgba(0,201,177,0.12);color:#00C9B1">CM</div><div><div class="msg-bubble">Acabo de revisar el análisis. Los datos de audiencias Gen Z están muy alineados 🔥</div><div class="msg-meta">Carmen M. · hace 12 min</div></div></div>
+        <div class="msg other"><div class="msg-av" style="background:rgba(247,201,72,0.18);color:#9a7b00">JL</div><div><div class="msg-bubble">¿Alguien tiene el brief exportado?</div><div class="msg-meta">Jorge L. · hace 8 min</div></div></div>
+        <div class="msg own"><div class="msg-av" style="background:rgba(232,56,90,0.1);color:#E8385A">Yo</div><div><div class="msg-bubble">Sí, lo genero en cuanto validemos la estrategia.</div><div class="msg-meta">hace 5 min</div></div></div>
+      </div>
+      <div class="ch-inp-area"><input class="ch-inp" id="ch-inp" placeholder="Escribe un mensaje…" onkeydown="sendMsg(event)"/><button class="send-btn" onclick="sendMsg({key:'Enter'})">↑</button></div>
+    </div>
+    <div class="collab-side">
+      <div style="padding:11px 13px;border-bottom:0.5px solid var(--bdr);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)">Equipo</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:0.5px solid var(--bdr)"><div class="msg-av" style="background:rgba(0,201,177,0.12);color:#00C9B1;width:28px;height:28px">CM</div><div><div style="font-size:12px;font-weight:500">Carmen M.</div><div style="font-size:10px;color:var(--muted)">Strategy Lead</div></div><div style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#00C9B1"></div></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:0.5px solid var(--bdr)"><div class="msg-av" style="background:rgba(232,56,90,0.1);color:#E8385A;width:28px;height:28px">AV</div><div><div style="font-size:12px;font-weight:500">Ana V.</div><div style="font-size:10px;color:var(--muted)">Creative Director</div></div><div style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#00C9B1"></div></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:0.5px solid var(--bdr)"><div class="msg-av" style="background:rgba(247,201,72,0.18);color:#9a7b00;width:28px;height:28px">JL</div><div><div style="font-size:12px;font-weight:500">Jorge L.</div><div style="font-size:10px;color:var(--muted)">Media Planner</div></div><div style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#F7C948"></div></div>
+      <div style="padding:12px 13px">
+        <div style="font-size:10px;font-weight:500;color:var(--muted);margin-bottom:7px">Invitar colaborador</div>
+        <input class="fi" placeholder="Email" style="margin-bottom:6px"/>
+        <button class="btn-sm" style="width:100%;justify-content:center" onclick="toast('✉️ Invitación enviada')">Enviar invitación</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /views -->
+</div><!-- /app -->
+
+<script>
+// ─── Vercel serverless proxy (la API key vive segura en el servidor) ────────
+const API_URL = "/api/chat";
+// ───────────────────────────────────────────────────────────────────────────
+
+let projType='Lanzamiento', busy=false, histData=[], curProj=null, histFlt='all', selCities=[], pdfFiles=[];
+
+/* TENSIÓN */
+function setTension(el, text) {
+  document.querySelectorAll('.ttag').forEach(t => t.classList.remove('sel'));
+  const ta = document.getElementById('tension');
+  if (ta.value === text) { ta.value = ''; return; }
+  ta.value = text; el.classList.add('sel');
+}
+
+/* PDF */
+function handleDrop(e){e.preventDefault();document.getElementById('pdf-zone').classList.remove('drag');processFiles([...e.dataTransfer.files].filter(f=>f.name.endsWith('.pdf')));}
+function handleFiles(fl){processFiles([...fl].filter(f=>f.name.endsWith('.pdf')));document.getElementById('pdf-input').value='';}
+function processFiles(files){
+  if(pdfFiles.length+files.length>5){toast('⚠️ Máximo 5 PDFs');return;}
+  files.forEach(f=>{
+    if(f.size>20*1024*1024){toast('⚠️ '+f.name+' supera 20MB');return;}
+    const entry={name:f.name,size:f.size,base64:null,status:'loading'};
+    pdfFiles.push(entry);renderPdfFiles();
+    const r=new FileReader();
+    r.onload=ev=>{entry.base64=ev.target.result.split(',')[1];entry.status='done';renderPdfFiles();toast('✅ '+f.name+' listo');};
+    r.onerror=()=>{entry.status='error';renderPdfFiles();};
+    r.readAsDataURL(f);
+  });
+}
+function removePdf(i){pdfFiles.splice(i,1);renderPdfFiles();}
+function renderPdfFiles(){
+  document.getElementById('pdf-files').innerHTML=pdfFiles.map((f,i)=>`
+    <div class="pdf-file">
+      <div class="pdf-file-ico">📄</div>
+      <div class="pdf-file-info">
+        <div class="pdf-file-name">${f.name}</div>
+        <div class="pdf-file-meta">${(f.size/1024).toFixed(0)} KB · ${f.status==='done'?'Listo':f.status==='loading'?'Leyendo…':'Error'}</div>
+        ${f.status==='loading'?'<div class="pdf-bar"><div class="pdf-bar-fill"></div></div>':''}
+      </div>
+      <span class="pdf-st ${f.status}">${f.status==='done'?'✓':f.status==='loading'?'…':'✕'}</span>
+      <button class="pdf-rm" onclick="removePdf(${i})">×</button>
+    </div>`).join('');
+  document.getElementById('pdf-zone').style.padding=pdfFiles.length?'8px':'14px';
+}
+
+/* CIUDADES */
+const ALL_CITIES=['Todo México','CDMX','Guadalajara','Monterrey','Puebla','Tijuana','León','Mérida','Querétaro','San Luis Potosí','Aguascalientes','Hermosillo','Saltillo','Mexicali','Culiacán','Cancún','Toluca','Chihuahua','Torreón','Veracruz','Oaxaca','Morelia','Villahermosa','Acapulco','Mazatlán','Los Cabos','Puerto Vallarta','Latinoamérica','Colombia','Argentina','Chile','Perú','Brasil','España','EE.UU. Latino','Global'];
+function filterCities(){const q=document.getElementById('city-input').value.toLowerCase();renderDD(ALL_CITIES.filter(c=>c.toLowerCase().includes(q)&&!selCities.includes(c)));}
+function renderDD(list){const dd=document.getElementById('city-dd');dd.innerHTML=list.slice(0,9).map(c=>`<div class="city-opt" onmousedown="addCity('${c}')">📍 ${c}</div>`).join('');list.length?dd.classList.add('open'):dd.classList.remove('open');}
+function openDD(){filterCities();}
+function closeDD(){document.getElementById('city-dd').classList.remove('open');}
+function addCity(c){if(selCities.includes(c))return;selCities.push(c);renderCityChips();document.getElementById('city-input').value='';document.getElementById('city-dd').classList.remove('open');}
+function removeCity(c){selCities=selCities.filter(x=>x!==c);renderCityChips();}
+function renderCityChips(){document.getElementById('city-chips').innerHTML=selCities.map(c=>`<div class="city-chip"><span>📍 ${c}</span><span class="rm" onclick="removeCity('${c}')">×</span></div>`).join('');}
+
+/* EDAD */
+function updAge(){
+  let mn=parseInt(document.getElementById('age-min').value),mx=parseInt(document.getElementById('age-max').value);
+  if(mn>mx-2){if(document.activeElement.id==='age-min')mn=mx-2;else mx=mn+2;document.getElementById('age-min').value=mn;document.getElementById('age-max').value=mx;}
+  document.getElementById('age-min-lbl').textContent=mn;
+  document.getElementById('age-max-lbl').textContent=mx>=80?'65+':mx;
+  const p=v=>(v-13)/(80-13)*100;
+  document.getElementById('age-fill').style.left=p(mn)+'%';
+  document.getElementById('age-fill').style.width=(p(mx)-p(mn))+'%';
+}
+updAge();
+
+/* BUDGET */
+function fmtBudget(){const v=parseFloat(document.getElementById('budget').value),cur=document.getElementById('currency').value,el=document.getElementById('budget-display');if(!v||isNaN(v)){el.style.display='none';return;}el.textContent=new Intl.NumberFormat('es-MX',{style:'currency',currency:cur,maximumFractionDigits:0}).format(v);el.style.display='block';}
+
+/* HELPERS */
+function sw(t){document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['new','history','brief','collab'][i]===t));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+t).classList.add('active');}
+function selTy(el){document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');projType=el.dataset.type;}
+function tog(el,cls){const on=['sr','st','sp','so'].some(c=>el.classList.contains(c));el.className=on?'tag':'tag '+cls;const cnt=document.querySelectorAll('#t-kpi .tag.st').length;const kc=document.getElementById('kpi-count');if(kc)kc.textContent=cnt>0?cnt+' KPI'+(cnt>1?'s':'')+' seleccionado'+(cnt>1?'s':''):'';}
+function addTag(e,id,cls){if(e.key!=='Enter')return;const v=e.target.value.trim();if(!v)return;const t=document.createElement('div');t.className='tag '+cls;t.textContent=v;t.onclick=()=>tog(t,cls);document.getElementById(id).appendChild(t);e.target.value='';}
+function getSel(id){return[...document.querySelectorAll('#'+id+' .tag.sr,#'+id+' .tag.st,#'+id+' .tag.sp,#'+id+' .tag.so')].map(t=>t.textContent).join(', ');}
+function updSplit(){['c','p2','m'].forEach(k=>{const v=parseInt(document.getElementById('s'+k).value)||0;document.getElementById('b'+(k==='p2'?'p':k)).style.width=Math.min(v,100)+'%';});const t=(parseInt(document.getElementById('sc').value)||0)+(parseInt(document.getElementById('sp2').value)||0)+(parseInt(document.getElementById('sm').value)||0);const el=document.getElementById('sttl');el.textContent='Total: '+t+'%';el.style.color=t===100?'#00C9B1':t>100?'#E8385A':'var(--muted)';}
+function toast(msg,dur=2400){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),dur);}
+
+/* ANALYSIS */
+async function runAnalysis(){
+  if(busy)return;
+  const brand=document.getElementById('brand').value.trim();
+  if(!brand){document.getElementById('brand').focus();toast('⚠️ Ingresa el nombre de la marca');return;}
+  if(pdfFiles.some(f=>f.status==='loading')){toast('⏳ Espera a que carguen los PDFs');return;}
+  busy=true;document.getElementById('btn-run').disabled=true;
+
+  const desc=document.getElementById('desc').value;
+  const tension=document.getElementById('tension').value.trim();
+  const budget=document.getElementById('budget').value;
+  const currency=document.getElementById('currency').value;
+  const budgetFmt=budget?new Intl.NumberFormat('es-MX',{style:'currency',currency,maximumFractionDigits:0}).format(parseFloat(budget)):'no especificado';
+  const kpis=getSel('t-kpi')||'no especificados';
+  const gender=getSel('t-gen')||'todos';
+  const genX=getSel('t-genx')||'no especificada';
+  const interests=getSel('t-int')||'no especificados';
+  const profile=getSel('t-prof')||'no especificado';
+  const ageMin=document.getElementById('age-min').value;
+  const ageMaxRaw=parseInt(document.getElementById('age-max').value);
+  const ageMax=ageMaxRaw>=80?'65+':ageMaxRaw;
+  const cities=selCities.length?selCities.join(', '):'no especificadas';
+  const comps=[document.getElementById('c1').value,document.getElementById('c2').value,document.getElementById('c3').value].filter(Boolean).join(', ')||'no especificados';
+  const sc=document.getElementById('sc').value,ssp=document.getElementById('sp2').value,ssm=document.getElementById('sm').value;
+  const donePdfs=pdfFiles.filter(f=>f.status==='done');
+
+  const mods=[{icon:'⚡',title:'Tensión estratégica',sub:'Diagnóstico del problema'},{icon:'📡',title:'Trends Hunter',sub:'Tendencias en tiempo real'},{icon:'👥',title:'Audiencias',sub:'Insights de comportamiento'},{icon:'🏆',title:'Competencia',sub:'Landscape competitivo'},{icon:'🎯',title:'Creative Strategist',sub:'Dirección creativa'},{icon:'🏭',title:'Industria',sub:'Contexto del sector'},{icon:'📺',title:'Medios',sub:'Canales óptimos'},{icon:'💡',title:'Insights creativos',sub:'Para el brief'}];
+  document.getElementById('results-area').innerHTML=`<div class="rt"><div><div class="rt-title">Analizando: ${brand}</div><div class="rt-meta">${projType} · ${budgetFmt}${tension?' · ⚡ Tensión definida':''}</div></div><span class="badge-pend">⚡ Procesando…</span></div><div class="rg">${mods.map((m,i)=>`<div class="rc"><div class="rc-head"><div class="rc-ico" style="background:var(--surf2)">${m.icon}</div><div><div class="rc-t">${m.title}</div><div class="rc-s">${m.sub}</div></div><div class="ldot" style="margin-left:auto;animation-delay:${i*.12}s"></div></div><div class="skel"><div class="sl" style="width:88%"></div><div class="sl" style="width:68%"></div><div class="sl" style="width:78%"></div></div><div class="pbar"><div class="pfill" style="animation-delay:${i*.18}s"></div></div></div>`).join('')}</div>`;
+
+  const pdfNote=donePdfs.length?`\n\nDOCUMENTOS ADJUNTOS: "${donePdfs.map(f=>f.name).join(', ')}". Léelos e integra sus insights.`:'';
+  const tensionNote=tension?`\n\nTENSIÓN / PROBLEMA CENTRAL: "${tension}". Esta tensión es el hilo conductor de toda la estrategia.`:'';
+
+  const prompt=`Eres experto senior en planificación estratégica de marketing, medios y creative strategy.${pdfNote}${tensionNote}
+
+Responde EXCLUSIVAMENTE con JSON válido, sin texto adicional, sin markdown, sin backticks.
+
+BRIEF:
+- Marca: ${brand}
+- Descripción: ${desc||'Ver documentos adjuntos'}
+- Tensión: ${tension||'no especificada'}
+- Tipo: ${projType}
+- Presupuesto: ${budgetFmt}
+- KPIs: ${kpis}
+- Audiencia: ${ageMin}–${ageMax} años, ${gender}, generación ${genX}, intereses: ${interests}, perfil: ${profile}
+- Ciudades: ${cities}
+- Competidores: ${comps}
+- Split: Creatividad ${sc}%, Producción ${ssp}%, Medios ${ssm}%
+
+{"tension_diagnosis":"...","trends":"...","audiences":"...","competition":"...","creative_strategy":"...","industry":"...","media":"...","creative_insights":"..."}
+
+tension_diagnosis: ${tension?`Diagnóstico profundo de "${tension}": por qué existe, cómo se manifiesta, qué la genera, consecuencia de no resolverla`:'Diagnostica el problema más probable para esta marca en este mercado'}
+trends: 4 tendencias 2024-2025 relevantes para ${brand} en ${cities}
+audiences: psicografía, motivaciones, comportamiento digital, plataformas, puntos de dolor de ${ageMin}-${ageMax} años, ${gender}, ${genX}, intereses: ${interests}
+competition: posicionamiento de ${comps}, sus brechas y oportunidades para ${brand}
+creative_strategy: dirección estratégica para ${projType}${tension?', partiendo de la tensión como insight central':''}, territorio, tono, propuesta de valor; impacto del presupuesto ${budgetFmt} y split ${sc}/${ssp}/${ssm}
+industry: contexto del sector en ${cities}, tendencias, riesgos y oportunidades
+media: canales para ${ageMin}-${ageMax} años en ${cities}, distribución de ${budgetFmt} con split medios ${ssm}%, timing
+creative_insights: 5 insights humanos profundos${tension?' nacidos de la tensión "'+tension+'"':''} y conceptos creativos potentes`;
+
+  const userContent=[];
+  donePdfs.forEach(f=>userContent.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.base64},title:f.name}));
+  userContent.push({type:'text',text:prompt});
+
+  try{
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:userContent}]})
+    });
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'Error '+res.status);}
+    const data=await res.json();
+    const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    curProj={brand,type:projType,data:parsed,date:new Date(),tension,cities,kpis,ageMin,ageMax,gender,genX,interests,profile,budget:budgetFmt,comps,sc,sp:ssp,sm:ssm,pdfCount:donePdfs.length,pdfNames:donePdfs.map(f=>f.name).join(', ')};
+    renderResults(curProj);saveHist(curProj);buildBrief(curProj);
+  }catch(err){
+    document.getElementById('results-area').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;gap:10px"><div style="font-size:26px">⚠️</div><div style="font-size:13px;font-weight:600">Error al generar</div><div style="font-size:11px;color:var(--muted);max-width:300px;line-height:1.5">${err.message}</div><button class="btn-sm" onclick="runAnalysis()" style="margin-top:6px">↺ Reintentar</button></div>`;
+  }
+  busy=false;document.getElementById('btn-run').disabled=false;
+}
+
+function renderResults(p){
+  const d=p.data;
+  const mods=[{k:'tension_diagnosis',icon:'⚡',bg:'rgba(232,56,90,0.08)',title:'Tensión estratégica',sub:'Diagnóstico del problema',full:true},{k:'trends',icon:'📡',bg:'rgba(232,56,90,0.06)',title:'Trends Hunter',sub:'Tendencias en tiempo real'},{k:'audiences',icon:'👥',bg:'rgba(59,139,221,0.08)',title:'Audiencias',sub:'Insights de comportamiento'},{k:'competition',icon:'🏆',bg:'rgba(247,201,72,0.12)',title:'Competencia',sub:'Landscape competitivo'},{k:'creative_strategy',icon:'🎯',bg:'rgba(127,119,221,0.1)',title:'Creative Strategist',sub:'Dirección creativa',full:true},{k:'industry',icon:'🏭',bg:'rgba(0,201,177,0.08)',title:'Industria',sub:'Contexto del sector'},{k:'media',icon:'📺',bg:'rgba(255,107,53,0.08)',title:'Medios funcionales',sub:'Canales y formatos'},{k:'creative_insights',icon:'💡',bg:'rgba(99,153,34,0.08)',title:'Insights creativos',sub:'Para el brief',full:true}];
+  const cards=mods.map(m=>`<div class="rc${m.full?' full':''}"><div class="rc-head"><div class="rc-ico" style="background:${m.bg}">${m.icon}</div><div><div class="rc-t">${m.title}</div><div class="rc-s">${m.sub}</div></div></div><div class="rc-body">${(d[m.k]||'—').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div></div>`).join('');
+  document.getElementById('results-area').innerHTML=`<div class="rt"><div><div class="rt-title">${p.brand} · ${p.type}${p.pdfCount?' · 📎 '+p.pdfCount:''}</div><div class="rt-meta">${p.tension?'⚡ '+p.tension.slice(0,50):p.cities||'—'} · ${p.budget}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-sm" onclick="copyResults()">📋 Copiar</button><button class="btn-sm pr" onclick="expBrief()">📄 Brief</button><span class="badge-ok">✓ Listo</span></div></div><div class="rg">${cards}</div>`;
+}
+
+function copyResults(){
+  if(!curProj)return;
+  const text=Object.values(curProj.data).join('\n\n');
+  navigator.clipboard.writeText(text).then(()=>toast('📋 Copiado al portapapeles'));
+}
+
+function saveHist(p){histData.unshift(p);renderHist();document.getElementById('hc').textContent=histData.length;toast('✅ Proyecto guardado en historial');}
+function renderHist(){
+  const grid=document.getElementById('hgrid');
+  const items=histFlt==='all'?histData:histData.filter(p=>p.type===histFlt);
+  if(!items.length){grid.innerHTML='<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center"><div style="font-size:28px;margin-bottom:10px">📁</div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Sin proyectos aún</div></div>';return;}
+  grid.innerHTML=items.map(p=>`<div class="hcard" onclick="loadProj(${histData.indexOf(p)})"><div class="hc-top"><div class="hc-brand">${p.brand}${p.pdfCount?' 📎':''}</div><div class="hc-type">${p.type} · ${new Date(p.date).toLocaleDateString('es-MX',{day:'numeric',month:'short'})}</div>${p.tension?`<div class="hc-tension">⚡ ${p.tension}</div>`:''}</div><div class="hc-chips">${p.cities?`<span class="chip chip-bl">📍 ${p.cities.split(',')[0]}</span>`:''}<span class="chip chip-tl">🎯 ${(p.kpis||'—').split(',')[0]}</span><span class="chip chip-gd">💰 ${p.budget}</span></div><div class="hc-foot"><span class="hc-date">hace ${Math.max(0,Math.round((Date.now()-new Date(p.date))/60000))} min</span><div style="display:flex;gap:4px"><button class="ib" onclick="event.stopPropagation();loadProj(${histData.indexOf(p)})">📂</button><button class="ib" onclick="event.stopPropagation();buildBrief(histData[${histData.indexOf(p)}]);sw('brief');toast('📄 Brief cargado')">📄</button><button class="ib" onclick="event.stopPropagation();histData.splice(${histData.indexOf(p)},1);renderHist();document.getElementById('hc').textContent=histData.length;toast('🗑 Eliminado')">🗑</button></div></div></div>`).join('');
+}
+function loadProj(i){curProj=histData[i];renderResults(curProj);buildBrief(curProj);sw('new');toast('📂 Proyecto cargado');}
+function fHist(el,f){document.querySelectorAll('.hf').forEach(h=>h.classList.remove('active'));el.classList.add('active');histFlt=f;renderHist();}
+
+function buildBrief(p){
+  const d=p.data;
+  const dt=new Date(p.date).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const ini=p.brand.split(' ').slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('');
+  document.getElementById('bb').textContent=p.brand.slice(0,7)+'…';
+  document.getElementById('brief-content').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#E8385A,#FF6B35);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">${ini||'B'}</div>
+        <div><div style="font-size:14px;font-weight:600">${p.brand}</div><div style="font-size:11px;color:var(--muted)">${p.type} · ${dt}</div></div>
+      </div>
+      <button class="btn-sm pr" onclick="expBrief()">⬇ Descargar PDF</button>
+    </div>
+    ${p.tension?`<div style="background:rgba(232,56,90,0.06);border:0.5px solid rgba(232,56,90,0.25);border-radius:9px;padding:12px 14px;margin-bottom:14px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#E8385A;margin-bottom:5px">⚡ Problema / Tensión a resolver</div><div style="font-size:13px;font-weight:500;line-height:1.5">"${p.tension}"</div></div>`:''}
+    ${p.pdfCount?`<div style="background:rgba(0,201,177,0.06);border:0.5px solid rgba(0,201,177,0.2);border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:11px;color:#00C9B1">📎 <strong>${p.pdfCount} documento(s)</strong> analizados: ${p.pdfNames}</div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px">
+      <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px"><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px">Presupuesto</div><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:#E8385A">${p.budget}</div></div>
+      <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px"><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px">KPIs</div><div style="font-size:11px">${p.kpis||'—'}</div></div>
+      <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px"><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px">Audiencia</div><div style="font-size:11px">${p.ageMin}–${p.ageMax} años · ${p.gender} · ${p.genX}</div></div>
+      <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px"><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px">Ciudades</div><div style="font-size:11px">${p.cities||'—'}</div></div>
+    </div>
+    <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:10px;font-weight:600;color:var(--muted)">Split de inversión</div>
+      <div style="display:flex;gap:14px">
+        <div style="text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:#E8385A">${p.sc}%</div><div style="font-size:9px;color:var(--muted)">Creatividad</div></div>
+        <div style="text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:#00C9B1">${p.sp}%</div><div style="font-size:9px;color:var(--muted)">Producción</div></div>
+        <div style="text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:#9a7b00">${p.sm}%</div><div style="font-size:9px;color:var(--muted)">Medios</div></div>
+      </div>
+    </div>
+    ${[{icon:'⚡',title:'Diagnóstico de tensión estratégica',key:'tension_diagnosis'},{icon:'🎯',title:'Dirección estratégica creativa',key:'creative_strategy'},{icon:'💡',title:'Insights creativos clave',key:'creative_insights'},{icon:'📡',title:'Tendencias relevantes',key:'trends'},{icon:'👥',title:'Insights de audiencias',key:'audiences'},{icon:'🏆',title:'Análisis competitivo',key:'competition'},{icon:'🏭',title:'Contexto de industria',key:'industry'},{icon:'📺',title:'Plan de medios recomendado',key:'media'}].map(s=>`<div style="margin-bottom:14px"><div style="font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:0.5px solid var(--bdr)">${s.icon} ${s.title}</div><div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:12px;font-size:12px;color:var(--muted);line-height:1.65">${(d[s.key]||'—').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--ink)">$1</strong>').replace(/\n/g,'<br>')}</div></div>`).join('')}
+    <div style="text-align:center;padding:16px 0;font-size:10px;color:var(--muted);border-top:0.5px solid var(--bdr)">Generado con StrategyOS AI · ${dt}</div>`;
+}
+
+function expBrief(){
+  if(!curProj){toast('⚠️ Primero genera un análisis');return;}
+  const content=document.getElementById('brief-content').innerHTML;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brief ${curProj.brand}</title><style>body{font-family:system-ui,sans-serif;max-width:740px;margin:0 auto;padding:32px 24px;color:#1a1a1a;font-size:13px;line-height:1.6}strong{color:#1a1a1a;font-weight:600}.btn-sm,.pr{display:none!important}@media print{*{-webkit-print-color-adjust:exact}}</style></head><body>${content}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+function sendMsg(e){
+  if(e.key!=='Enter')return;
+  const inp=document.getElementById('ch-inp'),v=inp.value.trim();if(!v)return;
+  const msgs=document.getElementById('ch-msgs');
+  const div=document.createElement('div');div.className='msg own';
+  div.innerHTML=`<div class="msg-av" style="background:rgba(232,56,90,0.1);color:#E8385A">Yo</div><div><div class="msg-bubble">${v}</div><div class="msg-meta">ahora</div></div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;inp.value='';
+  setTimeout(()=>{
+    const rs=['Perfecto 👍','Anotado.','Lo incluimos en el brief.','De acuerdo.'];
+    const ns=[['Carmen M.','#00C9B1','rgba(0,201,177,0.12)','CM'],['Jorge L.','#9a7b00','rgba(247,201,72,0.18)','JL']];
+    const[n,c,b,i]=ns[Math.floor(Math.random()*ns.length)];
+    const r=document.createElement('div');r.className='msg other';
+    r.innerHTML=`<div class="msg-av" style="background:${b};color:${c}">${i}</div><div><div class="msg-bubble">${rs[Math.floor(Math.random()*rs.length)]}</div><div class="msg-meta">${n} · ahora</div></div>`;
+    msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;
+  },900+Math.random()*600);
+}
+</script>
+</body>
+</html>

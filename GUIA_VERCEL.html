@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de despliegue — StrategyOS en Vercel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #f7f7f5; color: #1a1a1a; line-height: 1.6; }
+.page { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 48px; }
+.header-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; background: rgba(127,119,221,0.1); color: #534AB7; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+.header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 10px; }
+.header p { font-size: 15px; color: #666; max-width: 480px; margin: 0 auto; }
+
+/* Timeline */
+.timeline { position: relative; }
+.timeline::before { content: ''; position: absolute; left: 28px; top: 0; bottom: 0; width: 1px; background: #e5e5e0; }
+
+.step { display: flex; gap: 20px; margin-bottom: 32px; position: relative; }
+.step-num { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; position: relative; z-index: 1; border: 3px solid #f7f7f5; }
+.step-num.github { background: #1a1a1a; color: #fff; }
+.step-num.vercel { background: #000; color: #fff; }
+.step-num.code   { background: #E8385A; color: #fff; }
+.step-num.key    { background: #F7C948; color: #1a1a1a; }
+.step-num.done   { background: #00C9B1; color: #fff; }
+
+.step-body { flex: 1; padding-top: 10px; }
+.step-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.step-desc { font-size: 14px; color: #555; margin-bottom: 14px; line-height: 1.6; }
+
+/* Cards dentro de los pasos */
+.action-card { background: #fff; border: 0.5px solid #e5e5e0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.action-card.highlight { border-color: #7F77DD; background: rgba(127,119,221,0.04); }
+.action-card.warning { border-color: #F7C948; background: rgba(247,201,72,0.06); }
+.action-card.success { border-color: #00C9B1; background: rgba(0,201,177,0.05); }
+.action-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 8px; }
+.action-body { font-size: 13px; color: #333; }
+.action-body a { color: #534AB7; text-decoration: none; font-weight: 500; }
+.action-body a:hover { text-decoration: underline; }
+
+/* URL pill */
+.url-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f0efeb; border-radius: 6px; font-family: 'DM Mono', monospace; font-size: 12px; color: #444; margin: 4px 0; }
+
+/* File list */
+.file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.file-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f7f7f5; border-radius: 7px; border: 0.5px solid #e5e5e0; font-size: 12px; }
+.file-icon { font-size: 14px; flex-shrink: 0; }
+.file-name { font-family: 'DM Mono', monospace; font-weight: 500; }
+.file-desc { color: #888; margin-left: auto; font-size: 11px; }
+
+/* Numbered substeps */
+.substeps { display: flex; flex-direction: column; gap: 8px; }
+.substep { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+.substep-n { width: 22px; height: 22px; border-radius: 50%; background: #E8385A; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.substep-t { flex: 1; color: #333; line-height: 1.5; }
+.substep-t strong { color: #1a1a1a; }
+.substep-t code { background: #f0efeb; padding: 1px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 11px; color: #E8385A; }
+
+/* Env var row */
+.env-row { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: #f7f7f5; border-radius: 7px; border: 0.5px solid #e5e5e0; font-family: 'DM Mono', monospace; font-size: 12px; margin-bottom: 6px; }
+.env-key { color: #534AB7; font-weight: 500; }
+.env-eq { color: #888; }
+.env-val { color: #1a1a1a; }
+
+/* Result box */
+.result-box { background: linear-gradient(135deg, #7F77DD 0%, #E8385A 100%); border-radius: 12px; padding: 24px; text-align: center; color: #fff; margin-top: 40px; }
+.result-box h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.result-box p { font-size: 13px; opacity: 0.85; max-width: 400px; margin: 0 auto 16px; }
+.result-url { display: inline-block; background: rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 18px; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.3px; }
+
+/* Cost note */
+.cost-note { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 0.5px solid #e5e5e0; border-radius: 10px; padding: 14px 16px; margin-top: 20px; }
+.cost-icon { font-size: 18px; flex-shrink: 0; }
+.cost-body { font-size: 13px; color: #555; line-height: 1.6; }
+.cost-body strong { color: #1a1a1a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-badge">☁️ Guía de despliegue en Vercel</div>
+    <h1>StrategyOS — Online en 15 minutos</h1>
+    <p>Sin instalar nada en tu computadora. Todo desde el navegador.</p>
+  </div>
+
+  <div class="timeline">
+
+    <!-- PASO 1 -->
+    <div class="step">
+      <div class="step-num github">1</div>
+      <div class="step-body">
+        <div class="step-title">Crea una cuenta en GitHub</div>
+        <div class="step-desc">GitHub es donde vive el código. Vercel lo lee desde ahí y publica la app automáticamente.</div>
+        <div class="action-card highlight">
+          <div class="action-title">Ir a</div>
+          <div class="action-body"><a href="https://github.com/signup" target="_blank">→ github.com/signup</a> · Crea tu cuenta gratis (con tu correo personal, no el del trabajo)</div>
+        </div>
+        <div class="action-card">
+          <div class="action-title">Si ya tienes cuenta</div>
+          <div class="action-body">Salta directo al paso 2 ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="step">
+      <div class="step-num code">2</div>
+      <div class="step-body">
+        <div class="step-title">Sube los archivos a GitHub</div>
+        <div class="step-desc">Crea un repositorio nuevo y sube los 3 archivos del ZIP que descargaste.</div>
+        <div class="action-card">
+          <div class="action-title">Archivos a subir (del ZIP strategyos-vercel)</div>
+          <div class="file-list">
+            <div class="file-item"><span class="file-icon">📄</span><span class="file-name">index.html</span><span class="file-desc">La app completa</span></div>
+            <div class="file-item"><span class="file-icon">⚙️</span><span class="file-name">vercel.json</span><span class="file-desc">Config de Vercel</span></div>
+            <div class="file-item"><span class="file-icon">📁</span><span class="file-name">api/chat.js</span><span class="file-desc">El proxy seguro</span></div>
+          </div>
+        </div>
+        <div class="action-card highlight">
+          <div class="action-title">Pasos en GitHub</div>
+          <div class="substeps">
+            <div class="substep"><div class="substep-n">1</div><div class="substep-t">Entra a <a href="https://github.com/new" target="_blank" style="color:#534AB7;font-weight:500">github.com/new</a></div></div>
+            <div class="substep"><div class="substep-n">2</div><div class="substep-t">Nombre del repo: <code>strategyos</code> · Marca <strong>Public</strong> · Clic en <strong>Create repository</strong></div></div>
+            <div class="substep"><div class="substep-n">3</div><div class="substep-t">En la página del repo vacío, clic en <strong>"uploading an existing file"</strong></div></div>
+            <div class="substep"><div class="substep-n">4</div><div class="substep-t">Arrastra los 3 archivos (respetando que <code>chat.js</code> va dentro de una carpeta <code>api</code>)</div></div>
+            <div class="substep"><div class="substep-n">5</div><div class="substep-t">Clic en <strong>Commit changes</strong></div></div>
+          </div>
+        </div>
+        <div class="action-card warning">
+          <div class="action-title">⚠️ Importante — carpeta api</div>
+          <div class="action-body">El archivo <code>chat.js</code> debe estar dentro de una carpeta llamada exactamente <strong>api</strong>. Al subir archivos en GitHub, puedes escribir <code>api/chat.js</code> como nombre del archivo y GitHub crea la carpeta solo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="step">
+      <div class="step-num vercel">3</div>
+      <div class="step-body">
+        <div class="step-title">Conecta Vercel con GitHub</div>
+        <div class="step-desc">Vercel leerá tu repositorio y publicará la app automáticamente. Cada vez que actualices el código en GitHub, Vercel se actualiza solo.</div>
+        <div class="action-card highlight">
+          <div class="action-title">Ir a</div>
+          <div class="action-body"><a href="https://vercel.com/signup" target="_blank">→ vercel.com/signup</a> · Elige <strong>"Continue with GitHub"</strong> (así quedan conectados automáticamente)</div>
+        </div>
+        <div class="action-card">
+          <div class="action-title">Importar el proyecto</div>
+          <div class="substeps">
+            <div class="substep"><div class="substep-n">1</div><div class="substep-t">En el dashboard de Vercel clic en <strong>Add New → Project</strong></div></div>
+            <div class="substep"><div class="substep-n">2</div><div class="substep-t">Vercel mostrará tus repos de GitHub. Busca <code>strategyos</code> y clic en <strong>Import</strong></div></div>
+            <div class="substep"><div class="substep-n">3</div><div class="substep-t">En la pantalla de configuración, deja todo como está. <strong>No cambies nada aún.</strong></div></div>
+            <div class="substep"><div class="substep-n">4</div><div class="substep-t">Todavía NO hagas clic en Deploy — primero agrega la API Key en el paso 4</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 4 -->
+    <div class="step">
+      <div class="step-num key">4</div>
+      <div class="step-body">
+        <div class="step-title">Agrega tu API Key de Anthropic</div>
+        <div class="step-desc">Esta es la parte clave: la API key vive en el servidor de Vercel, no en el código. Nadie más puede verla.</div>
+        <div class="action-card warning">
+          <div class="action-title">Obtener tu API Key</div>
+          <div class="action-body">Ve a <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#534AB7;font-weight:500">console.anthropic.com/settings/keys</a> → <strong>Create Key</strong> → cópiala (empieza con <code>sk-ant-</code>)</div>
+        </div>
+        <div class="action-card highlight">
+          <div class="action-title">En la pantalla de configuración de Vercel</div>
+          <div class="substeps">
+            <div class="substep"><div class="substep-n">1</div><div class="substep-t">Expande la sección <strong>"Environment Variables"</strong></div></div>
+            <div class="substep"><div class="substep-n">2</div><div class="substep-t">En el campo <strong>Name</strong> escribe exactamente: <code>ANTHROPIC_API_KEY</code></div></div>
+            <div class="substep"><div class="substep-n">3</div><div class="substep-t">En el campo <strong>Value</strong> pega tu API key</div></div>
+            <div class="substep"><div class="substep-n">4</div><div class="substep-t">Clic en <strong>Add</strong></div></div>
+          </div>
+        </div>
+        <div class="env-row">
+          <span class="env-key">ANTHROPIC_API_KEY</span>
+          <span class="env-eq">=</span>
+          <span class="env-val">sk-ant-api03-xxxxxxxxxxxxxxxx</span>
+        </div>
+        <div class="action-card success">
+          <div class="action-title">✓ Ahora sí</div>
+          <div class="action-body">Haz clic en <strong>Deploy</strong>. Vercel tardará unos 30 segundos en publicar la app.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 5 -->
+    <div class="step">
+      <div class="step-num done">5</div>
+      <div class="step-body">
+        <div class="step-title">¡Listo! Comparte la URL con tu equipo</div>
+        <div class="step-desc">Vercel te da una URL pública gratuita que funciona en cualquier dispositivo.</div>
+        <div class="action-card success">
+          <div class="action-title">Tu URL quedará algo así</div>
+          <div class="action-body">
+            <div class="url-pill">🌐 strategyos-tuusuario.vercel.app</div>
+            <br><br>
+            Compártela con tu equipo por WhatsApp, Slack o email. Entra en Chrome, Safari, Edge — lo que sea.
+          </div>
+        </div>
+        <div class="action-card">
+          <div class="action-title">Dominio personalizado (opcional, también gratis)</div>
+          <div class="action-body">En Vercel → tu proyecto → <strong>Settings → Domains</strong> puedes poner un nombre personalizado como <code>estrategia.tuempresa.com</code> si tu empresa tiene dominio propio.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Resultado final -->
+  <div class="result-box">
+    <h2>StrategyOS online ✦</h2>
+    <p>Tu agente de marketing con IA disponible para todo tu equipo, desde cualquier lugar, sin instalar nada.</p>
+    <div class="result-url">strategyos-tuusuario.vercel.app</div>
+  </div>
+
+  <!-- Nota de costos -->
+  <div class="cost-note">
+    <div class="cost-icon">💡</div>
+    <div class="cost-body">
+      <strong>¿Cuánto cuesta?</strong> Vercel es completamente gratis para este uso (plan Hobby). La API de Anthropic cobra por uso: cada análisis completo cuesta aprox. $0.01–0.03 USD. Con $5 USD tienes para cientos de proyectos. Puedes poner un límite de gasto en <a href="https://console.anthropic.com" target="_blank" style="color:#534AB7">console.anthropic.com</a> para no llevarte sorpresas.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
