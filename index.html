@@ -572,79 +572,82 @@ async function runAnalysis(){
     ? 'Branding (construcción de marca: propósito, posicionamiento, valores, promesa de marca, arquitectura de marca y territorio de comunicación — NO diseño gráfico ni identidad visual)'
     : projType;
 
-  const prompt=`Eres experto senior en planificación estratégica de marketing, medios y creative strategy.${pdfNote}${tensionNote}
+  // Build individual prompts per section — more reliable than one big JSON
+  const briefContext = `
+MARCA: ${brand}
+DESCRIPCIÓN: ${desc||'no especificada'}
+TENSIÓN: ${tension||'no especificada'}
+TIPO DE PROYECTO: ${projTypeLabel}
+PRESUPUESTO: ${budgetFmt}
+KPIs: ${kpis}
+AUDIENCIA: ${ageMin}–${ageMax} años, ${gender}, generación ${genX}, intereses: ${interests}, perfil: ${profile}
+CIUDADES: ${cities}
+COMPETIDORES: ${comps}
+SPLIT DE INVERSIÓN: Creatividad ${sc}%, Producción ${ssp}%, Medios ${ssm}%
+${pdfNote}${tensionNote}`.trim();
 
-Responde EXCLUSIVAMENTE con JSON válido, sin texto adicional, sin markdown, sin backticks.
+  const sections = [
+    { key:'tension_diagnosis',   label:'Tensión estratégica',    instruction:'Diagnostica la tensión o problema central de esta campaña en 3-4 líneas concretas.' },
+    { key:'trends',              label:'Trends Hunter',          instruction:'Lista 3 tendencias actuales (2024-2025) relevantes para esta marca y audiencia. Formato: nombre de tendencia + 1-2 líneas de explicación.' },
+    { key:'audiences',           label:'Audiencias',             instruction:'Describe el perfil psicográfico, motivaciones, plataformas digitales favoritas y puntos de dolor de la audiencia objetivo. Máximo 5 líneas.' },
+    { key:'competition',         label:'Competencia',            instruction:'Analiza el posicionamiento de los competidores indicados y señala las brechas de oportunidad para esta marca. Máximo 4 líneas.' },
+    { key:'creative_strategy',   label:'Creative Strategist',    instruction:'Define la dirección estratégica creativa: territorio de marca, tono, propuesta de valor diferencial y cómo el presupuesto y el split de inversión impactan la estrategia. Máximo 6 líneas.' },
+    { key:'industry',            label:'Industria',              instruction:'Describe el contexto del sector, las tendencias de la categoría y las oportunidades principales. Máximo 4 líneas.' },
+    { key:'media',               label:'Medios funcionales',     instruction:'Recomienda los canales de medios más efectivos para esta audiencia y geografía, con justificación breve. Máximo 5 líneas.' },
+    { key:'creative_insights',   label:'Insights creativos',     instruction:'Comparte 3 insights humanos profundos y conceptos creativos accionables basados en el brief. Formato: insight + concepto en 2 líneas cada uno.' },
+  ];
+
+  const prompt = `Eres experto senior en estrategia de marketing y comunicación.
+
+Con base en este brief, responde la sección indicada. Sé concreto, directo y accionable. Responde SOLO con el texto de la sección, sin títulos, sin JSON, sin listas numeradas innecesarias.
 
 BRIEF:
-- Marca: ${brand}
-- Descripción: ${desc||'Ver documentos adjuntos'}
-- Tensión: ${tension||'no especificada'}
-- Tipo: ${projTypeLabel}
-- Presupuesto: ${budgetFmt}
-- KPIs: ${kpis}
-- Audiencia: ${ageMin}–${ageMax} años, ${gender}, generación ${genX}, intereses: ${interests}, perfil: ${profile}
-- Ciudades: ${cities}
-- Competidores: ${comps}
-- Split: Creatividad ${sc}%, Producción ${ssp}%, Medios ${ssm}%
+${briefContext}`;
 
-{"tension_diagnosis":"...","trends":"...","audiences":"...","competition":"...","creative_strategy":"...","industry":"...","media":"...","creative_insights":"..."}
-
-tension_diagnosis: diagnóstico de la tensión en máximo 4 líneas concisas
-trends: 3 tendencias clave, 2 líneas cada una
-audiences: perfil y motivaciones del consumidor objetivo, máximo 4 líneas
-competition: diferenciación vs competidores, máximo 3 líneas
-creative_strategy: dirección estratégica, territorio y tono de marca, máximo 5 líneas
-industry: contexto del sector, máximo 3 líneas
-media: canales prioritarios con justificación, máximo 4 líneas
-creative_insights: 3 insights creativos accionables, máximo 3 líneas cada uno`;
-
-  const userContent=[];
-  donePdfs.forEach(f=>userContent.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.base64},title:f.name}));
-  userContent.push({type:'text',text:prompt});
-
-  try{
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:userContent}]})
+  // One API call per section — no JSON parsing, just plain text responses
+  async function callSection(section) {
+    const userContent = [];
+    donePdfs.forEach(f => userContent.push({
+      type:'document',
+      source:{type:'base64',media_type:'application/pdf',data:f.base64},
+      title:f.name
+    }));
+    userContent.push({type:'text', text:
+      prompt + '\n\nSECCIÓN: ' + section.label + '\n\nINSTRUCCIÓN: ' + section.instruction
     });
-
-    // Leer como texto primero para detectar errores no-JSON
-    const rawRes = await res.text();
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1024,
+        messages:[{role:'user',content:userContent}]
+      })
+    });
+    const raw = await res.text();
     let data;
-    try {
-      data = JSON.parse(rawRes);
-    } catch {
-      throw new Error(`El servidor devolvió una respuesta inesperada:\n\n"${rawRes.slice(0,200)}"\n\nRevisa que la variable ANTHROPIC_API_KEY esté bien configurada en Vercel → Settings → Environment Variables y haz Redeploy.`);
-    }
+    try { data = JSON.parse(raw); }
+    catch { throw new Error('Respuesta inesperada del servidor: ' + raw.slice(0,100)); }
+    if (!res.ok || data.error) throw new Error(data.error?.message || data.error || 'Error ' + res.status);
+    return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  }
 
-    // Error devuelto por el proxy o por Anthropic
-    if (!res.ok || data.error) {
-      throw new Error(data.error || `Error ${res.status}`);
-    }
+  try {
+    // Run all 8 sections in parallel
+    const results = await Promise.all(
+      sections.map(s => callSection(s).catch(e => '⚠️ ' + e.message))
+    );
+    const resultData = {};
+    sections.forEach((s,i) => { resultData[s.key] = results[i]; });
 
-    const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    if (!raw) throw new Error('La IA no devolvió contenido. Intenta de nuevo.');
-
-    let parsed;
-    try {
-      parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    } catch {
-      throw new Error(`No se pudo interpretar la respuesta de la IA. Intenta de nuevo.`);
-    }
-
-    curProj={brand,type:projType,data:parsed,date:new Date(),tension,cities,kpis,ageMin,ageMax,gender,genX,interests,profile,budget:budgetFmt,comps,sc,sp:ssp,sm:ssm,pdfCount:donePdfs.length,pdfNames:donePdfs.map(f=>f.name).join(', ')};
+    curProj={brand,type:projType,data:resultData,date:new Date(),tension,cities,kpis,ageMin,ageMax,gender,genX,interests,profile,budget:budgetFmt,comps,sc,sp:ssp,sm:ssm,pdfCount:donePdfs.length,pdfNames:donePdfs.map(f=>f.name).join(', ')};
     renderResults(curProj);saveHist(curProj);buildBrief(curProj);
-  }catch(err){
-    const msg = err.message || 'Error desconocido';
+  } catch(err){
     document.getElementById('results-area').innerHTML=`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;gap:12px">
         <div style="font-size:28px">⚠️</div>
         <div style="font-size:14px;font-weight:600">Error al generar el análisis</div>
-        <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:9px;padding:14px 18px;max-width:420px;text-align:left;font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap">${msg}</div>
+        <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:9px;padding:14px 18px;max-width:420px;text-align:left;font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap">${err.message||'Error desconocido'}</div>
         <button class="btn-sm" onclick="runAnalysis()" style="margin-top:4px">↺ Reintentar</button>
       </div>`;
   }
