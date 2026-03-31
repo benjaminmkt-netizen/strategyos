@@ -304,7 +304,7 @@ input.split-n{width:44px;padding:4px 6px;border:0.5px solid var(--bdr);border-ra
     <div class="sec-title">Tipo de proyecto</div>
     <div class="type-cards">
       <div class="type-card sel" data-type="Lanzamiento" onclick="selTy(this)"><div class="tc-icon">🚀</div><div class="tc-name">Lanzamiento</div><div class="tc-desc">Nuevo producto</div></div>
-      <div class="type-card" data-type="Branding" onclick="selTy(this)"><div class="tc-icon">🎨</div><div class="tc-name">Branding</div><div class="tc-desc">Identidad</div></div>
+      <div class="type-card" data-type="Branding" onclick="selTy(this)"><div class="tc-icon">🏛️</div><div class="tc-name">Branding</div><div class="tc-desc">Construcción de marca</div></div>
       <div class="type-card" data-type="Awareness" onclick="selTy(this)"><div class="tc-icon">📣</div><div class="tc-name">Awareness</div><div class="tc-desc">Reconocimiento</div></div>
     </div>
   </div>
@@ -568,6 +568,10 @@ async function runAnalysis(){
   const pdfNote=donePdfs.length?`\n\nDOCUMENTOS ADJUNTOS: "${donePdfs.map(f=>f.name).join(', ')}". Léelos e integra sus insights.`:'';
   const tensionNote=tension?`\n\nTENSIÓN / PROBLEMA CENTRAL: "${tension}". Esta tensión es el hilo conductor de toda la estrategia.`:'';
 
+  const projTypeLabel = projType === 'Branding'
+    ? 'Branding (construcción de marca: propósito, posicionamiento, valores, promesa de marca, arquitectura de marca y territorio de comunicación — NO diseño gráfico ni identidad visual)'
+    : projType;
+
   const prompt=`Eres experto senior en planificación estratégica de marketing, medios y creative strategy.${pdfNote}${tensionNote}
 
 Responde EXCLUSIVAMENTE con JSON válido, sin texto adicional, sin markdown, sin backticks.
@@ -576,7 +580,7 @@ BRIEF:
 - Marca: ${brand}
 - Descripción: ${desc||'Ver documentos adjuntos'}
 - Tensión: ${tension||'no especificada'}
-- Tipo: ${projType}
+- Tipo: ${projTypeLabel}
 - Presupuesto: ${budgetFmt}
 - KPIs: ${kpis}
 - Audiencia: ${ageMin}–${ageMax} años, ${gender}, generación ${genX}, intereses: ${interests}, perfil: ${profile}
@@ -586,14 +590,14 @@ BRIEF:
 
 {"tension_diagnosis":"...","trends":"...","audiences":"...","competition":"...","creative_strategy":"...","industry":"...","media":"...","creative_insights":"..."}
 
-tension_diagnosis: ${tension?`Diagnóstico profundo de "${tension}": por qué existe, cómo se manifiesta, qué la genera, consecuencia de no resolverla`:'Diagnostica el problema más probable para esta marca en este mercado'}
-trends: 4 tendencias 2024-2025 relevantes para ${brand} en ${cities}
-audiences: psicografía, motivaciones, comportamiento digital, plataformas, puntos de dolor de ${ageMin}-${ageMax} años, ${gender}, ${genX}, intereses: ${interests}
-competition: posicionamiento de ${comps}, sus brechas y oportunidades para ${brand}
-creative_strategy: dirección estratégica para ${projType}${tension?', partiendo de la tensión como insight central':''}, territorio, tono, propuesta de valor; impacto del presupuesto ${budgetFmt} y split ${sc}/${ssp}/${ssm}
-industry: contexto del sector en ${cities}, tendencias, riesgos y oportunidades
-media: canales para ${ageMin}-${ageMax} años en ${cities}, distribución de ${budgetFmt} con split medios ${ssm}%, timing
-creative_insights: 5 insights humanos profundos${tension?' nacidos de la tensión "'+tension+'"':''} y conceptos creativos potentes`;
+tension_diagnosis: diagnóstico de la tensión en máximo 4 líneas concisas
+trends: 3 tendencias clave, 2 líneas cada una
+audiences: perfil y motivaciones del consumidor objetivo, máximo 4 líneas
+competition: diferenciación vs competidores, máximo 3 líneas
+creative_strategy: dirección estratégica, territorio y tono de marca, máximo 5 líneas
+industry: contexto del sector, máximo 3 líneas
+media: canales prioritarios con justificación, máximo 4 líneas
+creative_insights: 3 insights creativos accionables, máximo 3 líneas cada uno`;
 
   const userContent=[];
   donePdfs.forEach(f=>userContent.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.base64},title:f.name}));
@@ -603,18 +607,46 @@ creative_insights: 5 insights humanos profundos${tension?' nacidos de la tensió
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:userContent}]})
     });
-    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'Error '+res.status);}
-    const data=await res.json();
+
+    // Leer como texto primero para detectar errores no-JSON
+    const rawRes = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawRes);
+    } catch {
+      throw new Error(`El servidor devolvió una respuesta inesperada:\n\n"${rawRes.slice(0,200)}"\n\nRevisa que la variable ANTHROPIC_API_KEY esté bien configurada en Vercel → Settings → Environment Variables y haz Redeploy.`);
+    }
+
+    // Error devuelto por el proxy o por Anthropic
+    if (!res.ok || data.error) {
+      throw new Error(data.error || `Error ${res.status}`);
+    }
+
     const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if (!raw) throw new Error('La IA no devolvió contenido. Intenta de nuevo.');
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } catch {
+      throw new Error(`No se pudo interpretar la respuesta de la IA. Intenta de nuevo.`);
+    }
+
     curProj={brand,type:projType,data:parsed,date:new Date(),tension,cities,kpis,ageMin,ageMax,gender,genX,interests,profile,budget:budgetFmt,comps,sc,sp:ssp,sm:ssm,pdfCount:donePdfs.length,pdfNames:donePdfs.map(f=>f.name).join(', ')};
     renderResults(curProj);saveHist(curProj);buildBrief(curProj);
   }catch(err){
-    document.getElementById('results-area').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;gap:10px"><div style="font-size:26px">⚠️</div><div style="font-size:13px;font-weight:600">Error al generar</div><div style="font-size:11px;color:var(--muted);max-width:300px;line-height:1.5">${err.message}</div><button class="btn-sm" onclick="runAnalysis()" style="margin-top:6px">↺ Reintentar</button></div>`;
+    const msg = err.message || 'Error desconocido';
+    document.getElementById('results-area').innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;gap:12px">
+        <div style="font-size:28px">⚠️</div>
+        <div style="font-size:14px;font-weight:600">Error al generar el análisis</div>
+        <div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:9px;padding:14px 18px;max-width:420px;text-align:left;font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap">${msg}</div>
+        <button class="btn-sm" onclick="runAnalysis()" style="margin-top:4px">↺ Reintentar</button>
+      </div>`;
   }
   busy=false;document.getElementById('btn-run').disabled=false;
 }
