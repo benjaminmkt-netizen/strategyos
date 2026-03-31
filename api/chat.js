@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "API key no configurada en Vercel" });
+  if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY no configurada en Vercel. Ve a Settings → Environment Variables." });
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -21,9 +21,14 @@ export default async function handler(req, res) {
       body: JSON.stringify(req.body),
     });
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
+    const text = await response.text();
+    try {
+      const data = JSON.parse(text);
+      return res.status(response.status).json(data);
+    } catch {
+      return res.status(500).json({ error: "Respuesta inesperada de Anthropic: " + text.slice(0, 200) });
+    }
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Error de red: " + err.message });
   }
 }
