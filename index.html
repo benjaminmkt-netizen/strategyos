@@ -562,7 +562,17 @@ async function runAnalysis(){
   const sc=document.getElementById('sc').value,ssp=document.getElementById('sp2').value,ssm=document.getElementById('sm').value;
   const donePdfs=pdfFiles.filter(f=>f.status==='done');
 
-  const mods=[{icon:'⚡',title:'Tensión estratégica',sub:'Diagnóstico del problema'},{icon:'📡',title:'Trends Hunter',sub:'Tendencias en tiempo real'},{icon:'👥',title:'Audiencias',sub:'Insights de comportamiento'},{icon:'🏆',title:'Competencia',sub:'Landscape competitivo'},{icon:'🎯',title:'Creative Strategist',sub:'Dirección creativa'},{icon:'🏭',title:'Industria',sub:'Contexto del sector'},{icon:'📺',title:'Medios',sub:'Canales óptimos'},{icon:'💡',title:'Insights creativos',sub:'Para el brief'}];
+  const mods=[
+    {icon:'⚡',title:'Tensión estratégica',sub:'Diagnóstico del problema'},
+    {icon:'📡',title:'Trends Hunter',sub:'Tendencias en tiempo real'},
+    {icon:'👥',title:'Audiencias',sub:'Perfil del consumidor'},
+    {icon:'🏆',title:'Competencia',sub:'Landscape competitivo'},
+    {icon:'🎯',title:'Creative Strategist',sub:'Dirección creativa'},
+    {icon:'🏭',title:'Industria',sub:'Contexto del sector'},
+    {icon:'📺',title:'Medios funcionales',sub:'Canales óptimos'},
+    {icon:'💰',title:'Propuesta de presupuesto',sub:'Distribución por canal'},
+    {icon:'💡',title:'Insights creativos',sub:'Territorios y conceptos'},
+  ];
   document.getElementById('results-area').innerHTML=`<div class="rt"><div><div class="rt-title">Analizando: ${brand}</div><div class="rt-meta">${projType} · ${budgetFmt}${tension?' · ⚡ Tensión definida':''}</div></div><span class="badge-pend">⚡ Procesando…</span></div><div class="rg">${mods.map((m,i)=>`<div class="rc"><div class="rc-head"><div class="rc-ico" style="background:var(--surf2)">${m.icon}</div><div><div class="rc-t">${m.title}</div><div class="rc-s">${m.sub}</div></div><div class="ldot" style="margin-left:auto;animation-delay:${i*.12}s"></div></div><div class="skel"><div class="sl" style="width:88%"></div><div class="sl" style="width:68%"></div><div class="sl" style="width:78%"></div></div><div class="pbar"><div class="pfill" style="animation-delay:${i*.18}s"></div></div></div>`).join('')}</div>`;
 
   const pdfNote=donePdfs.length?`\n\nDOCUMENTOS ADJUNTOS: "${donePdfs.map(f=>f.name).join(', ')}". Léelos e integra sus insights.`:'';
@@ -587,14 +597,122 @@ SPLIT DE INVERSIÓN: Creatividad ${sc}%, Producción ${ssp}%, Medios ${ssm}%
 ${pdfNote}${tensionNote}`.trim();
 
   const sections = [
-    { key:'tension_diagnosis',   label:'Tensión estratégica',    instruction:'Diagnostica la tensión o problema central de esta campaña en 3-4 líneas concretas.' },
-    { key:'trends',              label:'Trends Hunter',          instruction:'Lista 3 tendencias actuales (2024-2025) relevantes para esta marca y audiencia. Formato: nombre de tendencia + 1-2 líneas de explicación.' },
-    { key:'audiences',           label:'Audiencias',             instruction:'Describe el perfil psicográfico, motivaciones, plataformas digitales favoritas y puntos de dolor de la audiencia objetivo. Máximo 5 líneas.' },
-    { key:'competition',         label:'Competencia',            instruction:'Analiza el posicionamiento de los competidores indicados y señala las brechas de oportunidad para esta marca. Máximo 4 líneas.' },
-    { key:'creative_strategy',   label:'Creative Strategist',    instruction:'Define la dirección estratégica creativa: territorio de marca, tono, propuesta de valor diferencial y cómo el presupuesto y el split de inversión impactan la estrategia. Máximo 6 líneas.' },
-    { key:'industry',            label:'Industria',              instruction:'Describe el contexto del sector, las tendencias de la categoría y las oportunidades principales. Máximo 4 líneas.' },
-    { key:'media',               label:'Medios funcionales',     instruction:'Recomienda los canales de medios más efectivos para esta audiencia y geografía, con justificación breve. Máximo 5 líneas.' },
-    { key:'creative_insights',   label:'Insights creativos',     instruction:'Comparte 3 insights humanos profundos y conceptos creativos accionables basados en el brief. Formato: insight + concepto en 2 líneas cada uno.' },
+    { key:'tension_diagnosis', label:'Tensión estratégica', instruction:`Eres el estratega líder de esta cuenta. Diagnostica con profundidad la tensión central que debe resolver esta campaña para la marca indicada.
+
+Desarrolla los siguientes puntos de forma fluida y conectada:
+1. RAÍZ DE LA TENSIÓN: ¿Por qué existe este problema? ¿Qué lo genera culturalmente, socialmente o en el mercado?
+2. MANIFESTACIÓN: ¿Cómo se vive esta tensión en la mente y vida del consumidor objetivo (${ageMin}-${ageMax} años, ${gender}, ${genX})?
+3. CONSECUENCIA DE NO RESOLVERLA: ¿Qué le pasa a la marca si ignora esta tensión? ¿Cómo afecta los KPIs de ${kpis}?
+4. OPORTUNIDAD ESTRATÉGICA: ¿Cuál es la oportunidad real que abre esta tensión para ${brand}?
+5. VERDAD HUMANA: Formula en una sola oración poderosa la verdad humana detrás de la tensión.
+
+Sé específico para ${brand} en ${cities}. Mínimo 200 palabras.` },
+
+    { key:'trends', label:'Trends Hunter', instruction:`Eres un experto en tendencias culturales y de consumo. Identifica las tendencias más relevantes para esta campaña.
+
+Para CADA tendencia desarrolla:
+- NOMBRE DE LA TENDENCIA (en mayúsculas y negrita con **)
+- Qué es y por qué está creciendo en 2024-2025
+- Cómo se manifiesta específicamente en ${cities} y en el segmento ${ageMin}-${ageMax} años, ${gender}, ${genX}
+- Cómo conecta con la tensión identificada y con los intereses de ${interests}
+- Qué oportunidad concreta abre para ${brand} en un proyecto de ${projType}
+
+Presenta 4 tendencias distintas. Mínimo 250 palabras en total.` },
+
+    { key:'audiences', label:'Audiencias', instruction:`Eres un experto en comportamiento del consumidor. Construye un perfil de audiencia profundo y accionable.
+
+Desarrolla los siguientes puntos:
+1. PERFIL PSICOGRÁFICO: Valores, creencias, aspiraciones y miedos del segmento ${ageMin}-${ageMax} años, ${gender}, generación ${genX} con intereses en ${interests} y perfil ${profile} en ${cities}.
+2. COMPORTAMIENTO DIGITAL: Plataformas que usa, tipo de contenido que consume, cuándo y cómo consume medios. Sé específico por plataforma.
+3. RELACIÓN CON LA CATEGORÍA: Cómo percibe actualmente marcas como ${brand}, qué le genera fricción, qué le genera confianza.
+4. MOMENTOS DE VERDAD: Los 3 momentos clave del día/semana donde esta audiencia es más receptiva a mensajes de ${brand}.
+5. TENSIÓN INTERNA: Cómo vive personalmente la tensión identificada en su vida cotidiana.
+6. QUÉ LO MUEVE A ACTUAR: Los detonadores emocionales y racionales que lo llevan a tomar decisiones relacionadas con esta categoría.
+
+Mínimo 250 palabras.` },
+
+    { key:'competition', label:'Competencia', instruction:`Eres un estratega de marca. Realiza un análisis competitivo profundo y accionable.
+
+Para los competidores indicados en el brief, desarrolla:
+1. MAPA DE POSICIONAMIENTO: ¿Cómo se posiciona cada competidor? ¿Qué territorio de comunicación ocupa? ¿Qué promesa hace?
+2. ANÁLISIS DE COMUNICACIÓN: ¿Qué tono, estética y mensajes usan? ¿En qué medios y formatos están presentes?
+3. FORTALEZAS Y DEBILIDADES: Qué hacen bien y qué vulnerabilidades tienen frente a la tensión identificada.
+4. BRECHAS DE OPORTUNIDAD: ¿Qué territorios emocionales, funcionales o culturales están desatendidos?
+5. DIFERENCIACIÓN PARA ${brand}: ¿Cuál es el espacio único que ${brand} puede ocupar que ningún competidor está ocupando hoy?
+6. RIESGO COMPETITIVO: ¿Qué podría hacer la competencia en respuesta a una campaña de ${brand}?
+
+Mínimo 200 palabras.` },
+
+    { key:'creative_strategy', label:'Creative Strategist', instruction:`Eres el Creative Strategist líder de esta campaña. Define la dirección estratégica completa que conecte todos los elementos del brief.
+
+Desarrolla con profundidad:
+1. TERRITORIO DE MARCA: El espacio emocional y cultural único donde ${brand} tiene permiso y credibilidad para habitar.
+2. PROPUESTA DE VALOR DIFERENCIAL: La promesa central que resuelve la tensión y conecta con la audiencia. Exprésala en máximo 2 líneas.
+3. TONO Y PERSONALIDAD: Cómo habla, cómo se mueve, cómo se siente la marca en esta campaña. 5 atributos con explicación.
+4. IDEA CREATIVA CENTRAL: Una gran idea que pueda vivir en todos los puntos de contacto. Nómbrala y explícala.
+5. NARRATIVA DE CAMPAÑA: El arco narrativo que conecta la tensión con la resolución que ofrece ${brand}.
+6. IMPACTO DEL PRESUPUESTO: Con un presupuesto de ${budgetFmt} y un split de Creatividad ${sc}% / Producción ${sp}% / Medios ${ssm}%, ¿qué nivel de producción y ambición creativa es realista? ¿Qué formatos y piezas se pueden producir?
+7. KPIs CREATIVOS: Cómo cada KPI seleccionado (${kpis}) se traduce en decisiones creativas concretas.
+
+Mínimo 300 palabras.` },
+
+    { key:'industry', label:'Industria', instruction:`Eres un experto en análisis de industria y contexto de mercado. Provee el contexto necesario para tomar decisiones estratégicas.
+
+Desarrolla:
+1. ESTADO ACTUAL DEL SECTOR: Tamaño, crecimiento y dinámica de la categoría en ${cities}.
+2. TENDENCIAS ESTRUCTURALES: Los cambios de largo plazo que están transformando la industria y que ${brand} debe considerar.
+3. COMPORTAMIENTO POST-PANDEMIA Y ACTUAL: Cómo han cambiado los hábitos de consumo en esta categoría.
+4. OPORTUNIDADES DE MERCADO: Los segmentos, momentos o necesidades sin cubrir que representan una oportunidad real.
+5. RIESGOS Y AMENAZAS: Factores externos (económicos, regulatorios, culturales) que pueden afectar la campaña.
+6. BENCHMARKS INTERNACIONALES: Casos de éxito de otras geografías que podrían adaptarse para ${brand} en ${cities}.
+
+Mínimo 200 palabras.` },
+
+    { key:'media', label:'Medios funcionales', instruction:`Eres un experto en planeación de medios. Define el ecosistema de medios óptimo para esta campaña.
+
+Desarrolla con detalle:
+1. ECOSISTEMA DE MEDIOS RECOMENDADO: Los canales prioritarios para llegar al segmento ${ageMin}-${ageMax} años, ${gender}, ${genX} en ${cities}, con justificación de por qué cada uno.
+2. ROL DE CADA CANAL: Qué trabajo hace cada medio en el funnel (awareness, consideración, conversión, fidelización).
+3. FORMATOS Y CREATIVIDADES RECOMENDADAS: Qué formatos funcionan mejor en cada canal para esta audiencia y tipo de proyecto (${projType}).
+4. TIMING Y FLIGHTING: Cómo distribuir la campaña en el tiempo para maximizar impacto con el presupuesto disponible.
+5. SINERGIAS ENTRE CANALES: Cómo los canales se complementan entre sí para crear un efecto multiplicador.
+6. KPIs POR CANAL: Qué métricas específicas medir en cada canal para evaluar el cumplimiento de ${kpis}.
+
+Mínimo 200 palabras.` },
+
+    { key:'budget_plan', label:'Propuesta de presupuesto de medios', instruction:`Eres un experto en inversión publicitaria y planeación de medios. Desarrolla una propuesta concreta de distribución del presupuesto.
+
+Con base en el presupuesto total de ${budgetFmt} y el split indicado:
+- Creatividad: ${sc}% = ${budgetFmt} × ${sc}/100
+- Producción: ${sp}% = ${budgetFmt} × ${sp}/100  
+- Medios: ${ssm}% = ${budgetFmt} × ${ssm}/100
+
+Desarrolla en detalle:
+1. DISTRIBUCIÓN POR CANAL DE MEDIOS: Divide el presupuesto de medios (${ssm}%) entre los canales recomendados. Indica monto aproximado y porcentaje para cada canal. Sé específico (TV, digital, OOH, radio, influencers, etc. según corresponda al brief).
+2. JUSTIFICACIÓN DE CADA ASIGNACIÓN: Por qué ese porcentaje para ese canal considerando la audiencia (${ageMin}-${ageMax} años en ${cities}) y los KPIs de ${kpis}.
+3. PRESUPUESTO DE PRODUCCIÓN: Qué se puede producir con el ${sp}% de producción. Qué tipos de piezas y en qué cantidad aproximada.
+4. PRESUPUESTO DE CREATIVIDAD: Cómo invertir el ${sc}% de creatividad. Qué agencia/talento/recursos requiere.
+5. BENCHMARKS DE INVERSIÓN: ¿Es suficiente este presupuesto para lograr los KPIs de ${kpis} en ${cities}? ¿Qué se puede lograr de forma realista?
+6. RECOMENDACIÓN DE FASES: Cómo distribuir la inversión en el tiempo si la campaña es por fases.
+
+Mínimo 250 palabras. Usa ** para resaltar los montos y canales clave.` },
+
+    { key:'creative_insights', label:'Insights creativos', instruction:`Eres un Creative Strategist con expertise en conceptualización. Genera los insights y territorios creativos más poderosos para esta campaña.
+
+Desarrolla:
+1. INSIGHTS HUMANOS PROFUNDOS: 4 insights que nazcan de la intersección entre la tensión identificada, los comportamientos de la audiencia (${ageMin}-${ageMax} años, ${gender}, ${genX}) y el contexto cultural de ${cities}. Cada insight debe expresar una verdad no obvia sobre el consumidor. Formato: **INSIGHT:** [la verdad humana en 1-2 oraciones impactantes]
+
+2. TERRITORIOS CREATIVOS: Para cada insight, propone un territorio creativo con:
+   - Nombre del territorio
+   - Concepto central (1 oración)
+   - Cómo se vería en ejecución (ejemplos concretos de piezas o experiencias)
+   - Por qué conecta con los KPIs de ${kpis}
+
+3. MANDATORIOS CREATIVOS: 5 principios que cualquier pieza de esta campaña debe cumplir para ser coherente con la estrategia.
+
+4. LO QUE NO SE DEBE HACER: 3 trampas creativas comunes en esta categoría que ${brand} debe evitar.
+
+Mínimo 300 palabras.` },
   ];
 
   const prompt = `Eres experto senior en estrategia de marketing y comunicación.
@@ -663,7 +781,17 @@ function toStr(v) {
 
 function renderResults(p){
   const d=p.data;
-  const mods=[{k:'tension_diagnosis',icon:'⚡',bg:'rgba(232,56,90,0.08)',title:'Tensión estratégica',sub:'Diagnóstico del problema',full:true},{k:'trends',icon:'📡',bg:'rgba(232,56,90,0.06)',title:'Trends Hunter',sub:'Tendencias en tiempo real'},{k:'audiences',icon:'👥',bg:'rgba(59,139,221,0.08)',title:'Audiencias',sub:'Insights de comportamiento'},{k:'competition',icon:'🏆',bg:'rgba(247,201,72,0.12)',title:'Competencia',sub:'Landscape competitivo'},{k:'creative_strategy',icon:'🎯',bg:'rgba(127,119,221,0.1)',title:'Creative Strategist',sub:'Dirección creativa',full:true},{k:'industry',icon:'🏭',bg:'rgba(0,201,177,0.08)',title:'Industria',sub:'Contexto del sector'},{k:'media',icon:'📺',bg:'rgba(255,107,53,0.08)',title:'Medios funcionales',sub:'Canales y formatos'},{k:'creative_insights',icon:'💡',bg:'rgba(99,153,34,0.08)',title:'Insights creativos',sub:'Para el brief',full:true}];
+  const mods=[
+    {k:'tension_diagnosis',icon:'⚡',bg:'rgba(232,56,90,0.08)',title:'Tensión estratégica',sub:'Diagnóstico del problema',full:true},
+    {k:'trends',icon:'📡',bg:'rgba(232,56,90,0.06)',title:'Trends Hunter',sub:'Tendencias 2024-2025'},
+    {k:'audiences',icon:'👥',bg:'rgba(59,139,221,0.08)',title:'Audiencias',sub:'Perfil y comportamiento'},
+    {k:'competition',icon:'🏆',bg:'rgba(247,201,72,0.12)',title:'Competencia',sub:'Landscape competitivo'},
+    {k:'creative_strategy',icon:'🎯',bg:'rgba(127,119,221,0.1)',title:'Creative Strategist',sub:'Dirección creativa',full:true},
+    {k:'industry',icon:'🏭',bg:'rgba(0,201,177,0.08)',title:'Industria',sub:'Contexto del sector'},
+    {k:'media',icon:'📺',bg:'rgba(255,107,53,0.08)',title:'Medios funcionales',sub:'Canales y formatos'},
+    {k:'budget_plan',icon:'💰',bg:'rgba(247,201,72,0.1)',title:'Propuesta de presupuesto',sub:'Distribución por canal',full:true},
+    {k:'creative_insights',icon:'💡',bg:'rgba(99,153,34,0.08)',title:'Insights creativos',sub:'Territorios y conceptos',full:true},
+  ];
 
   const cards=mods.map(m=>`<div class="rc${m.full?' full':''}"><div class="rc-head"><div class="rc-ico" style="background:${m.bg}">${m.icon}</div><div><div class="rc-t">${m.title}</div><div class="rc-s">${m.sub}</div></div></div><div class="rc-body">${toStr(d[m.k]).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div></div>`).join('');
   document.getElementById('results-area').innerHTML=`<div class="rt"><div><div class="rt-title">${p.brand} · ${p.type}${p.pdfCount?' · 📎 '+p.pdfCount:''}</div><div class="rt-meta">${p.tension?'⚡ '+p.tension.slice(0,50):p.cities||'—'} · ${p.budget}</div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn-sm" onclick="copyResults()">📋 Copiar</button><button class="btn-sm pr" onclick="expBrief()">📄 Brief</button><span class="badge-ok">✓ Listo</span></div></div><div class="rg">${cards}</div>`;
@@ -714,7 +842,15 @@ function buildBrief(p){
         <div style="text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:#9a7b00">${p.sm}%</div><div style="font-size:9px;color:var(--muted)">Medios</div></div>
       </div>
     </div>
-    ${[{icon:'⚡',title:'Diagnóstico de tensión estratégica',key:'tension_diagnosis'},{icon:'🎯',title:'Dirección estratégica creativa',key:'creative_strategy'},{icon:'💡',title:'Insights creativos clave',key:'creative_insights'},{icon:'📡',title:'Tendencias relevantes',key:'trends'},{icon:'👥',title:'Insights de audiencias',key:'audiences'},{icon:'🏆',title:'Análisis competitivo',key:'competition'},{icon:'🏭',title:'Contexto de industria',key:'industry'},{icon:'📺',title:'Plan de medios recomendado',key:'media'}].map(s=>`<div style="margin-bottom:14px"><div style="font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:0.5px solid var(--bdr)">${s.icon} ${s.title}</div><div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:12px;font-size:12px;color:var(--muted);line-height:1.65">${toStr(d[s.key]).replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--ink)">$1</strong>').replace(/\n/g,'<br>')}</div></div>`).join('')}
+    ${[{icon:'⚡',title:'Diagnóstico de tensión estratégica',key:'tension_diagnosis'},
+      {icon:'🎯',title:'Dirección estratégica creativa',key:'creative_strategy'},
+      {icon:'📡',title:'Tendencias relevantes',key:'trends'},
+      {icon:'👥',title:'Audiencias e insights de consumidor',key:'audiences'},
+      {icon:'🏆',title:'Análisis competitivo',key:'competition'},
+      {icon:'🏭',title:'Contexto de industria',key:'industry'},
+      {icon:'📺',title:'Medios funcionales',key:'media'},
+      {icon:'💰',title:'Propuesta de presupuesto de medios',key:'budget_plan'},
+      {icon:'💡',title:'Insights y territorios creativos',key:'creative_insights'}].map(s=>`<div style="margin-bottom:14px"><div style="font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:0.5px solid var(--bdr)">${s.icon} ${s.title}</div><div style="background:var(--surf);border:0.5px solid var(--bdr);border-radius:var(--r);padding:12px;font-size:12px;color:var(--muted);line-height:1.65">${toStr(d[s.key]).replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--ink)">$1</strong>').replace(/\n/g,'<br>')}</div></div>`).join('')}
     <div style="text-align:center;padding:16px 0;font-size:10px;color:var(--muted);border-top:0.5px solid var(--bdr)">Generado con StrategyOS AI · ${dt}</div>`;
 }
 
